@@ -1,5 +1,7 @@
 ## Canonicalization Compound Unit Representation & Transformation via Docker HTTP endpoint
 
+This is the implementation accompanying the MOMACS 2019 paper, [_Parsing, Representing and Transforming Units of Measure_](https://www.momacs.pitt.edu/wp-content/uploads/2019/05/Parsing-Representing-and-Transforming-Units-of-Measure.pdf).
+
 ### How to run:
 #### Build image
 ```
