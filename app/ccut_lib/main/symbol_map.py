@@ -1,10 +1,33 @@
-from main.rdf_parser import rdf_parser
-from main.si_prefix import si_prefix
+'''
+The SymbolMap is a singleton class to be accessed and used by the service.
+It holds a map (dictionary) of symbols (symbol_map), labels (label_map)
+and SI prefixes (si_prefix_map).
+'''
+
+from main.rdf_parser import RDFParser
+from main.si_prefix import SIPrefix
 from main.qudt_unit import QudtUnit
+from json import load
 
 QUDT_ONTOLOGY_DIR = 'data/'
 QUDT_V1_ONTOLOGY_FILES = ['unit.owl']
-# QUDT_V2_ONTOLOGY_FILES = ['VOCAB_QUDT-UNITS-BASE-v2.0.ttl', 'VOCAB_QUDT-UNITS-SPACE-AND-TIME-v2.0.ttl']
+USER_DEFINED_UNITS_FILE = 'user_defined.json'
+
+INDEX_NAME_CONVERSIONMULTIPLIER = 'conversion_multiplier'
+
+# TODO: remove
+DEBUG_WRITE_FILE_HNDLR = open('/Users/baselshbita/repos/ccut/app/ccut_lib/DEBUG_FILE.csv', 'w', encoding='utf-8') 
+PRINT_KEYS = ['uri', 'symbol', 'abbr', 'label', 'quantity_kind', 'conversion_multiplier', 'conversion_offset']
+
+def print_to_debug_file(dict_to_print):
+    for keyd, vald in dict_to_print.items():
+        DEBUG_WRITE_FILE_HNDLR.write(keyd + ',')
+        for print_key in PRINT_KEYS:
+            val_to_print = ''
+            if hasattr(vald, print_key):
+                val_to_print = str(getattr(vald, print_key)).strip()
+            DEBUG_WRITE_FILE_HNDLR.write(str(val_to_print + ','))
+        DEBUG_WRITE_FILE_HNDLR.write('\n')
 
 # Use as singleton class
 class SymbolMap:
@@ -17,9 +40,16 @@ class SymbolMap:
         self.si_prefix_map = dict()
 
         for ontof in QUDT_V1_ONTOLOGY_FILES:
-            self.rp = rdf_parser(QUDT_ONTOLOGY_DIR, ontof)
+            self.rp = RDFParser(QUDT_ONTOLOGY_DIR, ontof)
+
+        # user-defined-units list
+        self.udu = list()
+        with open(f'{QUDT_ONTOLOGY_DIR}/{USER_DEFINED_UNITS_FILE}', 'r') as read_file:
+            self.udu = load(read_file)
 
         self.construct_map()
+        del self.rp
+        del self.udu
 
     @staticmethod
     def get_instance() -> 'SymbolMap':
@@ -35,12 +65,12 @@ class SymbolMap:
             return False
 
         prefix, suffix = qu.symbol[0], qu.symbol[1:]
-        conversion_factor = si_prefix.get_factor(prefix)
+        conversion_factor = SIPrefix.get_factor(prefix)
         if qu.conversion_multiplier == conversion_factor and suffix in self.symbol_map:
             return True
 
         prefix, suffix = qu.symbol[:2], qu.symbol[2:]
-        conversion_factor = si_prefix.get_factor(prefix)
+        conversion_factor = SIPrefix.get_factor(prefix)
         if qu.conversion_multiplier == conversion_factor and suffix in self.symbol_map:
             return True
 
@@ -52,10 +82,18 @@ class SymbolMap:
         # qudt:DecimalPrefixUnit
 
         for qu in self.rp.get_details():
-            if not hasattr(qu, 'conversion_offset'):
+
+            qu_str_uri = qu.uri.strip()
+            if qu_str_uri in self.udu and qu.symbol not in self.symbol_map:
+                ud_qu = self.udu[qu_str_uri]
+                for key, val in ud_qu.items():
+                    if not hasattr(qu, key) and key in ud_qu:
+                        setattr(qu, key, ud_qu[key])
+
+            if not hasattr(qu, INDEX_NAME_CONVERSIONMULTIPLIER):
                 continue
 
-            if hasattr(qu, 'label') and si_prefix.is_si_prefix(qu.label.lower()):
+            if hasattr(qu, 'label') and SIPrefix.is_si_prefix(qu.label.lower()):
                 self.si_prefix_map[qu.symbol] = qu
                 self.si_prefix_map[qu.label.lower()] = qu
                 continue
@@ -83,23 +121,12 @@ class SymbolMap:
         if 'kilogram' in self.label_map:
             del self.label_map['kilogram']
 
-        '''
-        # print initial tables to monitor files
-        monfile_symb = open("monitor_symb.txt", "w")
-        for (keyd,vald) in self.symbol_map.items():
-            #monfile_symb.write(str(keyd) + ", " + str(vald) + '\n')
-            monfile_symb.write(str(keyd) + ", " + str(vald.label) + '\n')
-        monfile_symb.close()
+        # debug
+        DEBUG_WRITE_FILE_HNDLR.write('index,')
+        for print_key in PRINT_KEYS:
+            DEBUG_WRITE_FILE_HNDLR.write(print_key + ',')
+        DEBUG_WRITE_FILE_HNDLR.write('\n')
+        print_to_debug_file(self.symbol_map)
+        print_to_debug_file(self.label_map)
+        print_to_debug_file(self.si_prefix_map)
 
-        monfile_lbl = open("monitor_lbl.txt", "w")
-        for (keyd,vald) in self.label_map.items():
-            #monfile_lbl.write(str(keyd) + ", " + str(vald) + '\n')
-            monfile_lbl.write(str(keyd) + ", " + str(vald.label) + '\n')
-        monfile_lbl.close()
-
-        monfile_si = open("monitor_si.txt", "w")
-        for (keyd,vald) in self.si_prefix_map.items():
-            #monfile_si.write(str(keyd) + ", " + str(vald) + '\n')
-            monfile_si.write(str(keyd) + ", " + str(vald.label) + '\n')
-        monfile_si.close()
-        '''

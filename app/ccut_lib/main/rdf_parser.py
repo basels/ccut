@@ -1,18 +1,18 @@
-import rdflib
-from rdflib import RDF, RDFS, OWL, BNode, URIRef, Namespace
+'''
+The RDFParser class is used to parse the qudt unit.owl ontology file
+and create instances of QudtUnit from the file.
+'''
+from rdflib import Graph, RDF, RDFS, OWL, BNode, URIRef, Namespace
 from os.path import isfile, join, splitext
 from main.qudt_unit import QudtUnit
 
-class rdf_parser:  # TTL/OWL files
-    QUDT = Namespace("http://data.nasa.gov/qudt/owl/qudt#") # QUDT V1
-    
-    # QUDT V2 uses:
-    # - Namespace("http://qudt.org/schema/qudt/") 
-    # - self.QUDT.hasQuantityKind instead of self.QUDT.quantityKind
-
+# TTL/OWL files
+class RDFParser:
+    # QUDT V1
+    QUDT = Namespace("http://data.nasa.gov/qudt/owl/qudt#")
 
     def __init__(self, dir_path, file_name):
-        self.g = rdflib.Graph()
+        self.g = Graph()
         if splitext(file_name)[1] == ".ttl":
             self.g.parse(join(dir_path, file_name), format='n3')
         elif splitext(file_name)[1] == ".owl":
@@ -20,13 +20,15 @@ class rdf_parser:  # TTL/OWL files
 
     def get_details(self, rdftype=OWL.Class):
         for s in self.g.subjects():
-            # Ignore blank nodes; rdflib.term.BNode
+
+            # ignore blank nodes; rdflib.term.BNode
             if isinstance(s, BNode):
                 continue
 
             qu = QudtUnit()
             qu.set_uri(s)
 
+            # TODO: we need to 'add' if there are multiple defintions not 'set'
             for label in self.g.objects(s, RDFS.label):
                 qu.set_label(str(label.split(" (")[0])) # TODO
             for symbol in self.g.objects(s, self.QUDT.symbol):
