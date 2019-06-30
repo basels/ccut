@@ -1,4 +1,9 @@
-import re
+'''
+The Dimension and DimensionVector classes are used to capture and
+allow the construction of a proper dimensional representation of compound units.
+'''
+
+from re import search, IGNORECASE
 
 class Dimension:
     def __init__(self, symbol, uri, exponent: float):  # L, Length, -1
@@ -34,11 +39,11 @@ class DimensionVector:
         # Create a dimension map
         for dimension in dimensions:
             try:
-                exponent = float(re.search("-?[0-9]+\.[0-9]+|-?[0-9]+", dimension).group(0))
+                exponent = float(search("-?[0-9]+\.[0-9]+|-?[0-9]+", dimension).group(0))
             except:
                 exponent = 1.0
 
-            symbol = re.search("[a-z]+", dimension, flags=re.IGNORECASE).group(0)
+            symbol = search("[a-z]+", dimension, flags=IGNORECASE).group(0)
 
             dim_map[symbol] = exponent
 
@@ -71,6 +76,7 @@ class DimensionVector:
     def get_empty_dimension_vector(self):
         dimensionVector = []
 
+        # TODO: add URIs and use a better representation
         dimensionVector.append(Dimension('M', None, 0))
         dimensionVector.append(Dimension('L', None, 0))
         dimensionVector.append(Dimension('T', None, 0))

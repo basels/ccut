@@ -1,4 +1,9 @@
-from arpeggio import Optional, ZeroOrMore, OneOrMore, EOF
+'''
+The UnitParser class uses arpeggio to define the grammer of
+how to read a language of compound and atomic units.
+'''
+
+from arpeggio import Optional, ZeroOrMore, EOF
 from arpeggio import RegExMatch as _
 from arpeggio import ParserPython
 

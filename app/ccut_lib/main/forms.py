@@ -1,3 +1,7 @@
+'''
+The TransformationForm class is used in the UI.
+'''
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired

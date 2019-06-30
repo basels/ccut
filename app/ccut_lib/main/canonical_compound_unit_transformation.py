@@ -1,8 +1,14 @@
-import re
+'''
+The CanonicalCompoundUnitTransformation class is used to perform
+unit conversions between atomic and compound units of measurement (given as strings).
+'''
+
+from re import search
 from arpeggio import visit_parse_tree
 from main.unit_parser import UnitParser
 from main.unit_visitor import UnitVisitor
 from main.canonical_compound_unit import CanonicalCompoundUnit
+from main.canonical_simple_unit import QUDT_PROPERTIES_NAMESPACE, CCUT_NAMESPACE
 
 RET_VAL_OK = 0
 RET_VAL_TRANS_NOT_SYMMETRIC = 1
@@ -10,12 +16,12 @@ RET_VAL_DIMENSION_MISMATCH = 2
 RET_VAL_TRANS_UNKNOWN = 3
 RET_VAL_UNSUPPORTED_FLOW = 4
 
-# Singleton class
+# Use as singleton class
 class CanonicalCompoundUnitTransformation:
     instance = None
 
     def __init__(self):
-        self.prep_trans()
+        self.parser = UnitParser().get_parser()
 
     @staticmethod
     def get_instance() -> 'CanonicalCompoundUnitTransformation':
@@ -23,9 +29,6 @@ class CanonicalCompoundUnitTransformation:
             CanonicalCompoundUnitTransformation.instance = CanonicalCompoundUnitTransformation()
 
         return CanonicalCompoundUnitTransformation.instance
-
-    def prep_trans(self):
-        self.parser = UnitParser().get_parser()
 
     def canonical_transform_check_type_and_dim(self, part_type, part_dim):
         if ("UNKNOWN TYPE" == part_type) or ("UNKNOWN DIMENSION" == part_dim):
@@ -36,7 +39,7 @@ class CanonicalCompoundUnitTransformation:
         tot_exp = 1
         tot_str = dim_string
 
-        curr_dim_in_exp_re = re.search("\d", dim_string)
+        curr_dim_in_exp_re = search("\d", dim_string)
         if curr_dim_in_exp_re:
             tot_dim_idx = curr_dim_in_exp_re.start()
             tot_str = dim_string[:tot_dim_idx]
@@ -64,27 +67,27 @@ class CanonicalCompoundUnitTransformation:
         canonical_json_in, canonical_json_out = self.get_canonical_json_reprs(unit_in_string, unit_out_string)
 
         # check if overall-dimensions match
-        if canonical_json_in['ccut:hasDimension'] != canonical_json_out['ccut:hasDimension']:
+        if canonical_json_in[f'{CCUT_NAMESPACE}:hasDimension'] != canonical_json_out[f'{CCUT_NAMESPACE}:hasDimension']:
             return 0.0, RET_VAL_DIMENSION_MISMATCH # ERROR
 
         # create a copy of the output-required-parts
-        cncl_out_pts_cpy = list(canonical_json_out['ccut:hasPart'])
+        cncl_out_pts_cpy = list(canonical_json_out[f'{CCUT_NAMESPACE}:hasPart'])
 
         num_in = float(val_in)
 
         uout = num_in
         accu_str = ('C = IN = %f\n' % uout)
 
-        in_len = len(canonical_json_in['ccut:hasPart'])
+        in_len = len(canonical_json_in[f'{CCUT_NAMESPACE}:hasPart'])
         accu_offset = 0
         feedback_str = RET_VAL_OK
 
         # iterate over each part in the INPUT-canonical-unit
-        for idx_in, pt_in in enumerate(canonical_json_in['ccut:hasPart'], start=0):
+        for idx_in, pt_in in enumerate(canonical_json_in[f'{CCUT_NAMESPACE}:hasPart'], start=0):
 
             # check current Input type and dimension
-            curr_type_in  = pt_in['qudtp:quantityKind']
-            curr_dim_in   = pt_in['ccut:hasDimension']
+            curr_type_in  = pt_in[f'{QUDT_PROPERTIES_NAMESPACE}:quantityKind']
+            curr_dim_in   = pt_in[f'{CCUT_NAMESPACE}:hasDimension']
 
             uin_power = 1.0
             if 'ccut:exponent' in pt_in:
@@ -102,10 +105,10 @@ class CanonicalCompoundUnitTransformation:
             for idx_out, pt_out in enumerate(cncl_out_pts_cpy, start=0):
 
                 u_out_power = 1.0
-                if 'ccut:exponent' in pt_out:
-                    u_out_power = int(pt_out['ccut:exponent'])
+                if f'{CCUT_NAMESPACE}:exponent' in pt_out:
+                    u_out_power = int(pt_out[f'{CCUT_NAMESPACE}:exponent'])
 
-                curr_dim_out  = pt_out['ccut:hasDimension']
+                curr_dim_out  = pt_out[f'{CCUT_NAMESPACE}:hasDimension']
 
                 dimstr_out, dimexp_out = self.get_dimstr_dimexp_from_dimension(curr_dim_out)
                 pt_out['_metadata:total_dimension'] = dimexp_out * u_out_power
@@ -124,16 +127,16 @@ class CanonicalCompoundUnitTransformation:
             uin_no_prfx = uout
             accu_str += 'A = C = %f\n' % uin_no_prfx
 
-            if 'ccut:prefix' in pt_in:
-                prfx_conv_mult = pt_in['ccut:prefixConversionMultiplier']
-                prfx_conv_offs = pt_in['ccut:prefixConversionOffset']
+            if f'{CCUT_NAMESPACE}:prefix' in pt_in:
+                prfx_conv_mult = pt_in[f'{CCUT_NAMESPACE}:prefixConversionMultiplier']
+                prfx_conv_offs = pt_in[f'{CCUT_NAMESPACE}:prefixConversionOffset']
                 uin_no_prfx = (uin_no_prfx * pow(prfx_conv_mult, uin_power)) + prfx_conv_offs
                 accu_offset += prfx_conv_offs
                 accu_str += 'A = (A * %f^%f) + %f\n' % (prfx_conv_mult, uin_power, prfx_conv_offs)
-            qu_in_conv_mult  = pt_in['qudtp:conversionMultiplier']
-            qu_in_conv_off   = pt_in['qudtp:conversionOffset']
-            qu_out_conv_mult = curr_pt_out['qudtp:conversionMultiplier']
-            qu_out_conv_off  = curr_pt_out['qudtp:conversionOffset']
+            qu_in_conv_mult  = pt_in[f'{QUDT_PROPERTIES_NAMESPACE}:conversionMultiplier']
+            qu_in_conv_off   = pt_in[f'{QUDT_PROPERTIES_NAMESPACE}:conversionOffset']
+            qu_out_conv_mult = curr_pt_out[f'{QUDT_PROPERTIES_NAMESPACE}:conversionMultiplier']
+            qu_out_conv_off  = curr_pt_out[f'{QUDT_PROPERTIES_NAMESPACE}:conversionOffset']
             # calculate input --> base, base --> output
             uin_to_base  = (uin_no_prfx * pow(qu_in_conv_mult, uin_power)) + qu_in_conv_off
             accu_offset += qu_in_conv_off
@@ -142,9 +145,9 @@ class CanonicalCompoundUnitTransformation:
             accu_offset += qu_out_conv_off
             accu_str += 'C = (B - %f) / %f^%f\n' % (qu_out_conv_off, qu_out_conv_mult, u_out_power)
             # calcuate to match output prefix
-            if 'ccut:prefix' in curr_pt_out:
-                prfx_conv_mult = curr_pt_out['ccut:prefixConversionMultiplier']
-                prfx_conv_offs = curr_pt_out['ccut:prefixConversionOffset']
+            if f'{CCUT_NAMESPACE}:prefix' in curr_pt_out:
+                prfx_conv_mult = curr_pt_out[f'{CCUT_NAMESPACE}:prefixConversionMultiplier']
+                prfx_conv_offs = curr_pt_out[f'{CCUT_NAMESPACE}:prefixConversionOffset']
                 uout = (uout - prfx_conv_offs) / pow(prfx_conv_mult, u_out_power)
                 accu_offset += prfx_conv_offs
                 accu_str += 'C = (C - %f) / %f^%f\n' % (prfx_conv_offs, prfx_conv_mult, u_out_power)

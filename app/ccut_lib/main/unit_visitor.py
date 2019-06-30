@@ -1,8 +1,12 @@
+'''
+The UnitVisitor class deals with the construction of
+Unit and CompoundUnit instances.
+'''
+
 from arpeggio import PTNodeVisitor
 from main.compound_unit import CompoundUnit
 from main.unit import Unit
 
-##TODO : Can we write this better and make it more readable?
 class UnitVisitor(PTNodeVisitor):
     def visit_compound_unit(self, node, children):
         if len(children) == 1:

@@ -1,3 +1,8 @@
+'''
+The Unit class defines a class for atomic unit of measurement.
+It has symbol, multiplier, exponent and comment attributes.
+'''
+
 class Unit:
     def __init__(self, symbol, multiplier, exponent, comment):
         self.symbol = symbol
@@ -10,7 +15,7 @@ class Unit:
         return ', '.join("%s: %s" % item for item in attrs.items())
 
     @staticmethod
-    def negate_exponent(simpleUnit):  # simpleUnit type Unit
+    def negate_exponent(simpleUnit):
         unit = Unit(simpleUnit.symbol, simpleUnit.multiplier, simpleUnit.exponent, simpleUnit.comment)
 
         if unit.exponent is None:

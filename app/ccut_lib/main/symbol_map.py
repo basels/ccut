@@ -1,19 +1,22 @@
 '''
 The SymbolMap is a singleton class to be accessed and used by the service.
-It holds a map (dictionary) of symbols (symbol_map), labels (label_map)
-and SI prefixes (si_prefix_map).
+It holds a map (dictionary) of symbols ('symbol_map'), labels ('label_map')
+and SI prefixes ('si_prefix_map').
 '''
 
 from main.rdf_parser import RDFParser
 from main.si_prefix import SIPrefix
 from main.qudt_unit import QudtUnit
+from main.config import Config
 from json import load
 
-QUDT_ONTOLOGY_DIR = 'data/'
-QUDT_V1_ONTOLOGY_FILES = ['unit.owl']
-USER_DEFINED_UNITS_FILE = 'user_defined.json'
-
-INDEX_NAME_CONVERSIONMULTIPLIER = 'conversion_multiplier'
+INDEX_NAME_URI = 'uri'
+INDEX_NAME_QUANTITYKIND = 'quantityKind'
+INDEX_NAME_PREFIX = 'prefix'
+INDEX_NAME_CONVERSION_MULTIPLIER = 'conversion_multiplier'
+INDEX_NAME_CONVERSION_OFFSET = 'conversion_offset'
+INDEX_NAME_PREFIX_CONVERSION_MULTIPLIER = 'prefix_conversion_multiplier'
+INDEX_NAME_PREFIX_CONVERSION_OFFSET = 'prefix_conversion_offset'
 
 # TODO: remove
 DEBUG_WRITE_FILE_HNDLR = open('/Users/baselshbita/repos/ccut/app/ccut_lib/DEBUG_FILE.csv', 'w', encoding='utf-8') 
@@ -39,12 +42,12 @@ class SymbolMap:
         self.label_map = dict()
         self.si_prefix_map = dict()
 
-        for ontof in QUDT_V1_ONTOLOGY_FILES:
-            self.rp = RDFParser(QUDT_ONTOLOGY_DIR, ontof)
+        for ontof in Config.DATA_QUDT_V1_ONTO_FILES:
+            self.rp = RDFParser(Config.DATA_DIR, ontof)
 
         # user-defined-units list
         self.udu = list()
-        with open(f'{QUDT_ONTOLOGY_DIR}/{USER_DEFINED_UNITS_FILE}', 'r') as read_file:
+        with open(f'{Config.DATA_DIR}/{Config.DATA_USER_DEFINED_UNITS_FILE}', 'r') as read_file:
             self.udu = load(read_file)
 
         self.construct_map()
@@ -61,7 +64,7 @@ class SymbolMap:
     def is_qudt_unit_with_si_prefix(self, qu: QudtUnit):
         # Return true for km, ms, etc
         # False for mX
-        if not hasattr(qu, 'conversion_multiplier') or not hasattr(qu, 'symbol'):
+        if not hasattr(qu, INDEX_NAME_CONVERSION_MULTIPLIER) or not hasattr(qu, 'symbol'):
             return False
 
         prefix, suffix = qu.symbol[0], qu.symbol[1:]
@@ -90,7 +93,7 @@ class SymbolMap:
                     if not hasattr(qu, key) and key in ud_qu:
                         setattr(qu, key, ud_qu[key])
 
-            if not hasattr(qu, INDEX_NAME_CONVERSIONMULTIPLIER):
+            if not hasattr(qu, INDEX_NAME_CONVERSION_MULTIPLIER):
                 continue
 
             if hasattr(qu, 'label') and SIPrefix.is_si_prefix(qu.label.lower()):
