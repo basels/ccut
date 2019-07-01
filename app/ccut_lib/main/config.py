@@ -11,3 +11,4 @@ class Config(object):
     DATA_QUDT_V1_ONTO_FILES = ['unit.owl']
     DATA_USER_DEFINED_UNITS_FILE = 'user_defined.json'
     DATA_DIMENSIONS_MAP_FILE = 'quantity_dimension.json'
+    DATA_LABELS_EXTENSION_MAP_FILE = 'labels_extension.json'

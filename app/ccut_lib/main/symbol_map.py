@@ -50,9 +50,14 @@ class SymbolMap:
         with open(f'{Config.DATA_DIR}/{Config.DATA_USER_DEFINED_UNITS_FILE}', 'r') as read_file:
             self.udu = load(read_file)
 
+        # label extensions for existing instances
+        with open(f'{Config.DATA_DIR}/{Config.DATA_LABELS_EXTENSION_MAP_FILE}', 'r') as read_file:
+            self.lbl_ex = load(read_file)
+
         self.construct_map()
         del self.rp
         del self.udu
+        del self.lbl_ex
 
     @staticmethod
     def get_instance() -> 'SymbolMap':
@@ -87,6 +92,15 @@ class SymbolMap:
         for qu in self.rp.get_details():
 
             qu_str_uri = qu.uri.strip()
+
+            '''
+            # TODO: solve duplications
+            if hasattr(qu, 'symbol') and qu.symbol in self.symbol_map:
+                existing_uri = self.symbol_map[qu.symbol].uri.strip()
+                if qu_str_uri != existing_uri:
+                    print(f'symbol already defined: {qu.symbol} --> {existing_uri} / {qu_str_uri}')
+            '''
+
             if qu_str_uri in self.udu and qu.symbol not in self.symbol_map:
                 ud_qu = self.udu[qu_str_uri]
                 for key, val in ud_qu.items():
@@ -103,6 +117,12 @@ class SymbolMap:
 
             if hasattr(qu, 'symbol'):
                 self.symbol_map[qu.symbol] = qu
+                # check if user supplied additional labels
+                if qu_str_uri in self.lbl_ex:
+                    lbls_lst = self.lbl_ex[qu_str_uri]
+                    for ex_label in lbls_lst:
+                        if ex_label not in self.label_map:
+                            self.label_map[ex_label] = qu
 
             if hasattr(qu, 'label'):
                 self.label_map[qu.label.lower()] = qu

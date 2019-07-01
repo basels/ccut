@@ -28,13 +28,14 @@ class RDFParser:
             qu = QudtUnit()
             qu.set_uri(s)
 
-            # TODO: we need to 'add' if there are multiple defintions not 'set'
+            # TODO: add check if there are multiple defintions
             for label in self.g.objects(s, RDFS.label):
                 qu.set_label(str(label.split(" (")[0])) # TODO
             for symbol in self.g.objects(s, self.QUDT.symbol):
                 qu.set_symbol(str(symbol))
             for abbr in self.g.objects(s, self.QUDT.abbreviation):
                 qu.set_abbr(str(abbr))
+            # TODO: there is more than 1 quantity_kind!
             for quantity_kind in self.g.objects(s, self.QUDT.quantityKind):
                 qu.set_quantity_kind(quantity_kind)
             for conversion_multiplier in self.g.objects(s, self.QUDT.conversionMultiplier):
