@@ -1,48 +1,53 @@
-from main.symbol_map import SymbolMap
+'''
+The UnitMatch class is used to find the best unit match for a given string.
+'''
 
+from main.symbol_map import SymbolMap, INDEX_NAME_URI, INDEX_NAME_QUANTITYKIND, INDEX_NAME_PREFIX, \
+                            INDEX_NAME_CONVERSION_MULTIPLIER, INDEX_NAME_CONVERSION_OFFSET, \
+                            INDEX_NAME_PREFIX_CONVERSION_MULTIPLIER, INDEX_NAME_PREFIX_CONVERSION_OFFSET
 
 class UnitMatch:
 
     def find_best_unit_match_by_string(symbol, unit_map: SymbolMap):
         if symbol in unit_map.symbol_map:
             return {
-                'uri': str(unit_map.symbol_map[symbol].uri),
-                'quantityKind': str(unit_map.symbol_map[symbol].quantity_kind),
-                'prefix': None,
-                'conversion_multiplier': unit_map.symbol_map[symbol].conversion_multiplier,
-                'conversion_offset': unit_map.symbol_map[symbol].conversion_offset
+                INDEX_NAME_URI: str(unit_map.symbol_map[symbol].uri),
+                INDEX_NAME_QUANTITYKIND: str(unit_map.symbol_map[symbol].quantity_kind),
+                INDEX_NAME_PREFIX: None,
+                INDEX_NAME_CONVERSION_MULTIPLIER: unit_map.symbol_map[symbol].conversion_multiplier,
+                INDEX_NAME_CONVERSION_OFFSET: unit_map.symbol_map[symbol].conversion_offset
             }
 
         if symbol in unit_map.label_map:
             return {
-                'uri': str(unit_map.label_map[symbol].uri),
-                'quantityKind': str(unit_map.label_map[symbol].quantity_kind),
-                'prefix': None,
-                'conversion_multiplier': unit_map.label_map[symbol].conversion_multiplier,
-                'conversion_offset': unit_map.label_map[symbol].conversion_offset
+                INDEX_NAME_URI: str(unit_map.label_map[symbol].uri),
+                INDEX_NAME_QUANTITYKIND: str(unit_map.label_map[symbol].quantity_kind),
+                INDEX_NAME_PREFIX: None,
+                INDEX_NAME_CONVERSION_MULTIPLIER: unit_map.label_map[symbol].conversion_multiplier,
+                INDEX_NAME_CONVERSION_OFFSET: unit_map.label_map[symbol].conversion_offset
             }
 
-        for i in range(5): # TODO: why '5'?
+        for i in range(5): # longest prefix is 5 chars long
             prefix, suffix = symbol[0:i + 1], symbol[i + 1:]
             if prefix in unit_map.si_prefix_map and suffix in unit_map.symbol_map:
                 return {
-                    'uri': str(unit_map.symbol_map[suffix].uri),
-                    'quantityKind': str(unit_map.symbol_map[suffix].quantity_kind),
-                    'prefix': str(unit_map.si_prefix_map[prefix].uri),
-                    'prefix_conversion_multiplier': unit_map.si_prefix_map[prefix].conversion_multiplier,
-                    'prefix_conversion_offset': unit_map.si_prefix_map[prefix].conversion_offset,
-                    'conversion_multiplier': unit_map.symbol_map[suffix].conversion_multiplier,
-                    'conversion_offset': unit_map.symbol_map[suffix].conversion_offset
+                    INDEX_NAME_URI: str(unit_map.symbol_map[suffix].uri),
+                    INDEX_NAME_QUANTITYKIND: str(unit_map.symbol_map[suffix].quantity_kind),
+                    INDEX_NAME_PREFIX: str(unit_map.si_prefix_map[prefix].uri),
+                    INDEX_NAME_PREFIX_CONVERSION_MULTIPLIER: unit_map.si_prefix_map[prefix].conversion_multiplier,
+                    INDEX_NAME_PREFIX_CONVERSION_OFFSET: unit_map.si_prefix_map[prefix].conversion_offset,
+                    INDEX_NAME_CONVERSION_MULTIPLIER: unit_map.symbol_map[suffix].conversion_multiplier,
+                    INDEX_NAME_CONVERSION_OFFSET: unit_map.symbol_map[suffix].conversion_offset
                 }
             if prefix in unit_map.si_prefix_map and suffix and suffix.lower() in unit_map.label_map:
                 return {
-                    'uri': str(unit_map.label_map[suffix].uri),
-                    'quantityKind': str(unit_map.label_map[suffix].quantity_kind),
-                    'prefix': str(unit_map.si_prefix_map[prefix].uri),
-                    'prefix_conversion_multiplier': unit_map.si_prefix_map[prefix].conversion_multiplier,
-                    'prefix_conversion_offset': unit_map.si_prefix_map[prefix].conversion_offset,
-                    'conversion_multiplier': unit_map.label_map[suffix].conversion_multiplier,
-                    'conversion_offset': unit_map.label_map[suffix].conversion_offset
+                    INDEX_NAME_URI: str(unit_map.label_map[suffix].uri),
+                    INDEX_NAME_QUANTITYKIND: str(unit_map.label_map[suffix].quantity_kind),
+                    INDEX_NAME_PREFIX: str(unit_map.si_prefix_map[prefix].uri),
+                    INDEX_NAME_PREFIX_CONVERSION_MULTIPLIER: unit_map.si_prefix_map[prefix].conversion_multiplier,
+                    INDEX_NAME_PREFIX_CONVERSION_OFFSET: unit_map.si_prefix_map[prefix].conversion_offset,
+                    INDEX_NAME_CONVERSION_MULTIPLIER: unit_map.label_map[suffix].conversion_multiplier,
+                    INDEX_NAME_CONVERSION_OFFSET: unit_map.label_map[suffix].conversion_offset
                 }
 
         return None

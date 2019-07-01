@@ -10,21 +10,13 @@
         <div>
           <img height="50" src="{{url_for('static', filename='logo.png')}}">  
           MINT Transformations: 
-          <a href="/">Home</a>  
-          <a href="/trans_form">Canonical Transform</a>  
-          <a href="/get_symbol_map">Symbol Map</a>  
-          <a href="/get_dimension_map">Dimension Map</a>  
+          <a href="/">Home</a>
+          <a href="/get_canonical_json">Compound Unit Representation</a>
+          <a href="/trans_form">Compound Units Conversion</a>
+          <a href="/get_symbol_map">Symbol Map</a>
+          <a href="/get_dimension_map">Dimension Map</a>
         </div>
         <hr>
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <ul>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% endwith %}
         {% block content %}{% endblock %}
     </body>
 </html>

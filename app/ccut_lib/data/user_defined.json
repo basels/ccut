@@ -1,0 +1,7 @@
+{
+    "http://data.nasa.gov/qudt/owl/unit#Barrel": {
+        "conversion_offset": 0,
+        "conversion_multiplier": 0.1589873
+    }
+}
+

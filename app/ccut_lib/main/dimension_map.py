@@ -1,6 +1,12 @@
-import json
+'''
+The DimensionMap is a singleton class to be accessed and used by the service.
+It holds a map (dictionary) of dimensions ('qd_map').
+'''
 
-# Singleton class
+from json import load
+from main.config import Config
+
+# Use as singleton class
 class DimensionMap:
     instance = None
 
@@ -17,6 +23,5 @@ class DimensionMap:
         return DimensionMap.instance
 
     def load_map(self):
-        # TODO: Move path to config file
-        with open("data/quantity_dimension.json") as f:
-            self.qd_map = json.load(f)
+        with open(f'{Config.DATA_DIR}/{Config.DATA_DIMENSIONS_MAP_FILE}') as f:
+            self.qd_map = load(f)

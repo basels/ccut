@@ -1,4 +1,9 @@
-class si_prefix:
+'''
+The SIPrefix class defines the SI (International System of Units) prefixes
+and the different variants that are used to symbolize the same prefix.
+'''
+
+class SIPrefix:
     name_factor = {
         "deci": 1e-1,
         "centi": 1e-2,

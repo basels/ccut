@@ -1,3 +1,8 @@
+'''
+The QudtUnit class defines a class for any unit of measurement
+used in the CCUT service.
+'''
+
 from rdflib import URIRef
 
 class QudtUnit:
@@ -24,8 +29,6 @@ class QudtUnit:
 
     def set_conversion_offset(self, conversion_offset: float):
         self.conversion_offset = conversion_offset
-
-
 
     def __repr__(self):
         attrs = vars(self)

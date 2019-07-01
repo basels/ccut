@@ -1,10 +1,15 @@
-from main.dimension import DimensionVector
+'''
+The CanonicalCompoundUnit class wraps the CompoundUnit class
+and binds it to a dimension.
+'''
+
+from main.canonical_simple_unit import CanonicalSimpleUnit, QUDT_PROPERTIES_NAMESPACE, CCUT_NAMESPACE
 from main.compound_unit import CompoundUnit
-from typing import *
-from main.canonical_simple_unit import CanonicalSimpleUnit
+from main.dimension import DimensionVector
+from main.symbol_map import SymbolMap
 from main.unit import Unit
 from main.unit_match import UnitMatch
-from main.symbol_map import SymbolMap
+from typing import *
 
 class CanonicalCompoundUnit:
     def __init__(self, compoundUnit: CompoundUnit):
@@ -16,7 +21,7 @@ class CanonicalCompoundUnit:
         # Rearrange numerator and denominator
         # compoundUnit = self.rearrange_numerator_denominator(compoundUnit)
         compoundUnit = self.merge_same_units(compoundUnit)
-        self.unit_obj['qudtp:abbreviation'] = self.get_abbreviation(compoundUnit)
+        self.unit_obj[f'{QUDT_PROPERTIES_NAMESPACE}:abbreviation'] = self.get_abbreviation(compoundUnit)
 
         # Map compound unit to any known quantities
         qudtAbbr = self.get_abbreviation(compoundUnit, qudtStyle=True)
@@ -24,25 +29,25 @@ class CanonicalCompoundUnit:
         if compoundUnitQuantity is not None:
             pass
 
-        self.unit_obj['ccut:hasPart'] = []
+        self.unit_obj[f'{CCUT_NAMESPACE}:hasPart'] = []
 
         if compoundUnit.numerator:
             for n in compoundUnit.numerator:
                 csu = CanonicalSimpleUnit(n).get_unit_object()
-                self.unit_obj['ccut:hasPart'].append(csu)
-                dimensionVector += DimensionVector().set_dimensions(csu['ccut:hasDimension']).raise_to_power(
+                self.unit_obj[f'{CCUT_NAMESPACE}:hasPart'].append(csu)
+                dimensionVector += DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(
                     n.exponent or 1)
 
         if compoundUnit.denominator:
             for d in compoundUnit.denominator:
                 csu = CanonicalSimpleUnit(Unit.negate_exponent(d)).get_unit_object()
-                self.unit_obj['ccut:hasPart'].append(csu)
+                self.unit_obj[f'{CCUT_NAMESPACE}:hasPart'].append(csu)
                 # This is line is too complicated. Must be simplified
-                dimensionVector += DimensionVector().set_dimensions(csu['ccut:hasDimension']).raise_to_power(
+                dimensionVector += DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(
                     Unit.negate_exponent(d).exponent or 1)
 
                 # Calculate dimension of unit
-        self.unit_obj['ccut:hasDimension'] = dimensionVector.get_abbr()
+        self.unit_obj[f'{CCUT_NAMESPACE}:hasDimension'] = dimensionVector.get_abbr()
 
     def merge_same_units(self, compoundUnit: CompoundUnit):
         cu = CompoundUnit([], [])

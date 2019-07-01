@@ -1,21 +1,29 @@
-import re
+'''
+The CanonicalCompoundUnitTransformation class is used to perform
+unit conversions between atomic and compound units of measurement (given as strings).
+'''
+
 from arpeggio import visit_parse_tree
+from copy import deepcopy
+from main.canonical_compound_unit import CanonicalCompoundUnit
+from main.canonical_simple_unit import QUDT_PROPERTIES_NAMESPACE, CCUT_NAMESPACE
 from main.unit_parser import UnitParser
 from main.unit_visitor import UnitVisitor
-from main.canonical_compound_unit import CanonicalCompoundUnit
+from re import search
 
+RET_STR_MAP = ["OK", "TRANSFORMATION_IS_NOT_SYMMETRIC", "DIMENSION_MISMATCH", "TRANSFORMATION_UNKNOWN", "UNSUPPORTED_FLOW"]
 RET_VAL_OK = 0
 RET_VAL_TRANS_NOT_SYMMETRIC = 1
 RET_VAL_DIMENSION_MISMATCH = 2
 RET_VAL_TRANS_UNKNOWN = 3
 RET_VAL_UNSUPPORTED_FLOW = 4
 
-# Singleton class
+# Use as singleton class
 class CanonicalCompoundUnitTransformation:
     instance = None
 
     def __init__(self):
-        self.prep_trans()
+        self.parser = UnitParser().get_parser()
 
     @staticmethod
     def get_instance() -> 'CanonicalCompoundUnitTransformation':
@@ -23,9 +31,6 @@ class CanonicalCompoundUnitTransformation:
             CanonicalCompoundUnitTransformation.instance = CanonicalCompoundUnitTransformation()
 
         return CanonicalCompoundUnitTransformation.instance
-
-    def prep_trans(self):
-        self.parser = UnitParser().get_parser()
 
     def canonical_transform_check_type_and_dim(self, part_type, part_dim):
         if ("UNKNOWN TYPE" == part_type) or ("UNKNOWN DIMENSION" == part_dim):
@@ -36,10 +41,11 @@ class CanonicalCompoundUnitTransformation:
         tot_exp = 1
         tot_str = dim_string
 
-        curr_dim_in_exp_re = re.search("\d", dim_string)
+        curr_dim_in_exp_re = search("\d", dim_string)
         if curr_dim_in_exp_re:
             tot_dim_idx = curr_dim_in_exp_re.start()
             tot_str = dim_string[:tot_dim_idx]
+            # TODO: revisit this
             try:
                 tot_exp = int(dim_string[tot_dim_idx:])
             except:
@@ -48,116 +54,147 @@ class CanonicalCompoundUnitTransformation:
 
         return tot_str, tot_exp
 
-    def get_canonical_json_reprs(self, unit_in_string, unit_out_string):
+    def get_canonical_compound_unit_dict_from_string(self, unit_string):
         # parse input and output units
-        parsed_input_unit = visit_parse_tree(self.parser.parse(unit_in_string), UnitVisitor(debug=False))
-        parsed_output_unit = visit_parse_tree(self.parser.parse(unit_out_string), UnitVisitor(debug=False))
-        
-        # get canonical representation
-        canonical_json_in = CanonicalCompoundUnit(parsed_input_unit).get_unit_object()
-        canonical_json_out = CanonicalCompoundUnit(parsed_output_unit).get_unit_object()
+        parsed_unit = visit_parse_tree(self.parser.parse(unit_string), UnitVisitor(debug=False))
+        canonical_compound_unit_dict = CanonicalCompoundUnit(parsed_unit).get_unit_object()
+        return canonical_compound_unit_dict
 
-        return canonical_json_in, canonical_json_out
+    def get_atomic_unit_exponent(self, atomic_unit_part_dict):
+        exponent = 1.0
+        exponent_index_str = f'{CCUT_NAMESPACE}:exponent'
+        if exponent_index_str in atomic_unit_part_dict:
+            exponent = int(atomic_unit_part_dict[exponent_index_str])
+        return exponent
 
-    def canonical_transform(self, unit_in_string, unit_out_string, val_in):
+    def get_atomic_unit_symbol(self, atomic_unit_part_dict):
+        symbol_index_str = f'{QUDT_PROPERTIES_NAMESPACE}:symbol'
+        return atomic_unit_part_dict[symbol_index_str]
+
+    def get_compound_unit_parts(self, compound_unit_dict):
+        parts_index_str = f'{CCUT_NAMESPACE}:hasPart'
+        if parts_index_str in compound_unit_dict:
+            return compound_unit_dict[parts_index_str]
+        return None
+
+    def normalize_src_dst_compound_units(self, compound_unit_dict_src, compound_unit_dict_dst):
+        compound_unit_dict_src_copy = deepcopy(compound_unit_dict_src)
+
+        atomic_idx_src_orig = 0 # used since we alter src_copy but we must maintain the src index
+        for atomic_idx_src, atomic_pt_src in enumerate(self.get_compound_unit_parts(compound_unit_dict_src_copy)):
+
+            src_pt_type  = atomic_pt_src[f'{QUDT_PROPERTIES_NAMESPACE}:quantityKind']
+            src_pt_dim   = atomic_pt_src[f'{CCUT_NAMESPACE}:hasDimension']
+            src_pt_exp   = self.get_atomic_unit_exponent(atomic_pt_src)
+            src_pt_smbl  = self.get_atomic_unit_symbol(atomic_pt_src)
+
+            ''' iterate over dst compound unit and check
+            if we have a an atomic unit with the same symbol and exponent '''
+            compound_unit_dict_dst_copy = deepcopy(compound_unit_dict_dst)
+            for atomic_idx_dst, atomic_pt_dst in enumerate(self.get_compound_unit_parts(compound_unit_dict_dst_copy)):
+                dst_pt_type  = atomic_pt_src[f'{QUDT_PROPERTIES_NAMESPACE}:quantityKind']
+                dst_pt_dim   = atomic_pt_src[f'{CCUT_NAMESPACE}:hasDimension']
+                dst_pt_exp   = self.get_atomic_unit_exponent(atomic_pt_dst)
+                dst_pt_smbl  = self.get_atomic_unit_symbol(atomic_pt_dst)
+
+                dst_type_dim_valid, _ = self.canonical_transform_check_type_and_dim(dst_pt_type, dst_pt_dim)
+                if src_pt_smbl == dst_pt_smbl and src_pt_exp == dst_pt_exp:
+                    self.get_compound_unit_parts(compound_unit_dict_src).pop(atomic_idx_src_orig)
+                    atomic_idx_src_orig -= 1
+                    self.get_compound_unit_parts(compound_unit_dict_dst).pop(atomic_idx_dst)
+                    break
+            atomic_idx_src_orig += 1
+
+    def canonical_transform(self, unit_src_string, unit_dst_string, val_in):
         # get canonical representation
-        canonical_json_in, canonical_json_out = self.get_canonical_json_reprs(unit_in_string, unit_out_string)
+        ccu_src = self.get_canonical_compound_unit_dict_from_string(unit_src_string)
+        ccu_dst = self.get_canonical_compound_unit_dict_from_string(unit_dst_string)
 
         # check if overall-dimensions match
-        if canonical_json_in['ccut:hasDimension'] != canonical_json_out['ccut:hasDimension']:
+        if ccu_src[f'{CCUT_NAMESPACE}:hasDimension'] != ccu_dst[f'{CCUT_NAMESPACE}:hasDimension']:
             return 0.0, RET_VAL_DIMENSION_MISMATCH # ERROR
 
+        ''' if we reached here it means that dimensions match even if some are not recognized!
+            i.e.: 'USD' (part) has "UNKNOWN DIMENSION" and "UNKNOWN TYPE" / other part is 'kg' -->
+                  abbreviation of the whole unit "USD kg-1" '''
+        self.normalize_src_dst_compound_units(ccu_src, ccu_dst)
+
         # create a copy of the output-required-parts
-        cncl_out_pts_cpy = list(canonical_json_out['ccut:hasPart'])
+        ccu_dst_copy = deepcopy(self.get_compound_unit_parts(ccu_dst))
 
         num_in = float(val_in)
-
         uout = num_in
-        accu_str = ('C = IN = %f\n' % uout)
 
-        in_len = len(canonical_json_in['ccut:hasPart'])
+        src_len = len(self.get_compound_unit_parts(ccu_src))
         accu_offset = 0
         feedback_str = RET_VAL_OK
 
         # iterate over each part in the INPUT-canonical-unit
-        for idx_in, pt_in in enumerate(canonical_json_in['ccut:hasPart'], start=0):
+        for atomic_pt_src in self.get_compound_unit_parts(ccu_src):
 
-            # check current Input type and dimension
-            curr_type_in  = pt_in['qudtp:quantityKind']
-            curr_dim_in   = pt_in['ccut:hasDimension']
-
-            uin_power = 1.0
-            if 'ccut:exponent' in pt_in:
-                uin_power = int(pt_in['ccut:exponent'])
+            # check current input type and dimension
+            curr_type_in  = atomic_pt_src[f'{QUDT_PROPERTIES_NAMESPACE}:quantityKind']
+            curr_dim_in   = atomic_pt_src[f'{CCUT_NAMESPACE}:hasDimension']
+            uin_power     = self.get_atomic_unit_exponent(atomic_pt_src)
 
             dimstr_in, dimexp_in = self.get_dimstr_dimexp_from_dimension(curr_dim_in)
-            pt_in['_metadata:total_dimension'] = dimexp_in * uin_power
+            atomic_pt_src['_metadata:total_dimension'] = dimexp_in * uin_power
 
             check_pt, tmp_str = self.canonical_transform_check_type_and_dim(curr_type_in, curr_dim_in)
             if False == check_pt:
                 return 0.0, tmp_str # ERROR
-            curr_pt_out = None
+            curr_atomic_pt_dst = None
 
             # iterate over each part in the OUTPUT-canonical-unit-copy
-            for idx_out, pt_out in enumerate(cncl_out_pts_cpy, start=0):
+            for atomic_idx_dst, atomic_pt_dst in enumerate(ccu_dst_copy):
 
-                u_out_power = 1.0
-                if 'ccut:exponent' in pt_out:
-                    u_out_power = int(pt_out['ccut:exponent'])
+                u_out_power = self.get_atomic_unit_exponent(atomic_pt_dst)
 
-                curr_dim_out  = pt_out['ccut:hasDimension']
+                curr_dim_out  = atomic_pt_dst[f'{CCUT_NAMESPACE}:hasDimension']
 
                 dimstr_out, dimexp_out = self.get_dimstr_dimexp_from_dimension(curr_dim_out)
-                pt_out['_metadata:total_dimension'] = dimexp_out * u_out_power
+                atomic_pt_dst['_metadata:total_dimension'] = dimexp_out * u_out_power
 
-                if pt_in['_metadata:total_dimension'] == pt_out['_metadata:total_dimension']:
-                    curr_pt_out = pt_out.copy()
-                    del cncl_out_pts_cpy[idx_out]
+                if atomic_pt_src['_metadata:total_dimension'] == atomic_pt_dst['_metadata:total_dimension']:
+                    curr_atomic_pt_dst = deepcopy(atomic_pt_dst)
+                    del ccu_dst_copy[atomic_idx_dst]
                     break
 
             # ERROR: we didn't find an output unit
             #        THIS MEANS THERE IS A PROBLEM IN THE CODE, SINCE WE 'PASSED' OVERALL-DIMENSIONS CHECK
-            if None == curr_pt_out:
+            if None == curr_atomic_pt_dst:
                 return 0.0, RET_VAL_UNSUPPORTED_FLOW # ERROR
 
             # calcuate to match input prefix
             uin_no_prfx = uout
-            accu_str += 'A = C = %f\n' % uin_no_prfx
 
-            if 'ccut:prefix' in pt_in:
-                prfx_conv_mult = pt_in['ccut:prefixConversionMultiplier']
-                prfx_conv_offs = pt_in['ccut:prefixConversionOffset']
+            if f'{CCUT_NAMESPACE}:prefix' in atomic_pt_src:
+                prfx_conv_mult = atomic_pt_src[f'{CCUT_NAMESPACE}:prefixConversionMultiplier']
+                prfx_conv_offs = atomic_pt_src[f'{CCUT_NAMESPACE}:prefixConversionOffset']
                 uin_no_prfx = (uin_no_prfx * pow(prfx_conv_mult, uin_power)) + prfx_conv_offs
                 accu_offset += prfx_conv_offs
-                accu_str += 'A = (A * %f^%f) + %f\n' % (prfx_conv_mult, uin_power, prfx_conv_offs)
-            qu_in_conv_mult  = pt_in['qudtp:conversionMultiplier']
-            qu_in_conv_off   = pt_in['qudtp:conversionOffset']
-            qu_out_conv_mult = curr_pt_out['qudtp:conversionMultiplier']
-            qu_out_conv_off  = curr_pt_out['qudtp:conversionOffset']
+            qu_in_conv_mult  = atomic_pt_src[f'{QUDT_PROPERTIES_NAMESPACE}:conversionMultiplier']
+            qu_in_conv_off   = atomic_pt_src[f'{QUDT_PROPERTIES_NAMESPACE}:conversionOffset']
+            qu_out_conv_mult = curr_atomic_pt_dst[f'{QUDT_PROPERTIES_NAMESPACE}:conversionMultiplier']
+            qu_out_conv_off  = curr_atomic_pt_dst[f'{QUDT_PROPERTIES_NAMESPACE}:conversionOffset']
             # calculate input --> base, base --> output
             uin_to_base  = (uin_no_prfx * pow(qu_in_conv_mult, uin_power)) + qu_in_conv_off
             accu_offset += qu_in_conv_off
-            accu_str += 'B = (A * %f^%f) + %f\n' % (qu_in_conv_mult, uin_power, qu_in_conv_off)
             uout = (uin_to_base - qu_out_conv_off) / pow(qu_out_conv_mult, u_out_power)
             accu_offset += qu_out_conv_off
-            accu_str += 'C = (B - %f) / %f^%f\n' % (qu_out_conv_off, qu_out_conv_mult, u_out_power)
             # calcuate to match output prefix
-            if 'ccut:prefix' in curr_pt_out:
-                prfx_conv_mult = curr_pt_out['ccut:prefixConversionMultiplier']
-                prfx_conv_offs = curr_pt_out['ccut:prefixConversionOffset']
+            if f'{CCUT_NAMESPACE}:prefix' in curr_atomic_pt_dst:
+                prfx_conv_mult = curr_atomic_pt_dst[f'{CCUT_NAMESPACE}:prefixConversionMultiplier']
+                prfx_conv_offs = curr_atomic_pt_dst[f'{CCUT_NAMESPACE}:prefixConversionOffset']
                 uout = (uout - prfx_conv_offs) / pow(prfx_conv_mult, u_out_power)
                 accu_offset += prfx_conv_offs
-                accu_str += 'C = (C - %f) / %f^%f\n' % (prfx_conv_offs, prfx_conv_mult, u_out_power)
-            accu_str += 'C = %f\n' % uout
-
-        # print(accu_str)
 
         # check if there are still 'parts' in the output, if so, then we can't perform the transformation
-        if len(cncl_out_pts_cpy) > 0:
+        if len(ccu_dst_copy) > 0:
             return 0.0, RET_VAL_TRANS_UNKNOWN # ERROR
 
         # check if we had a transformation that required an offset addition or subtraction in a multi-transformation process
-        if 0 != accu_offset and in_len > 1:
+        if 0 != accu_offset and src_len > 1:
             return 0.0, RET_VAL_TRANS_NOT_SYMMETRIC # ERROR
 
         return uout, feedback_str
