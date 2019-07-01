@@ -77,7 +77,7 @@ class CanonicalCompoundUnitTransformation:
             return compound_unit_dict[parts_index_str]
         return None
 
-    def normalize_compound_units_holding_unknown_units(self, compound_unit_dict_src, compound_unit_dict_dst):
+    def normalize_src_dst_compound_units(self, compound_unit_dict_src, compound_unit_dict_dst):
         compound_unit_dict_src_copy = deepcopy(compound_unit_dict_src)
 
         atomic_idx_src_orig = 0 # used since we alter src_copy but we must maintain the src index
@@ -117,7 +117,7 @@ class CanonicalCompoundUnitTransformation:
         ''' if we reached here it means that dimensions match even if some are not recognized!
             i.e.: 'USD' (part) has "UNKNOWN DIMENSION" and "UNKNOWN TYPE" / other part is 'kg' -->
                   abbreviation of the whole unit "USD kg-1" '''
-        self.normalize_compound_units_holding_unknown_units(ccu_src, ccu_dst)
+        self.normalize_src_dst_compound_units(ccu_src, ccu_dst)
 
         # create a copy of the output-required-parts
         ccu_dst_copy = deepcopy(self.get_compound_unit_parts(ccu_dst))
