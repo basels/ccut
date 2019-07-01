@@ -10,7 +10,7 @@ from main.config import Config
 from main.unit_match import UnitMatch
 from main.symbol_map import SymbolMap
 from main.dimension_map import DimensionMap
-from main.canonical_compound_unit_transformation import CanonicalCompoundUnitTransformation
+from main.canonical_compound_unit_transformation import CanonicalCompoundUnitTransformation, RET_STR_MAP
 ############
 
 app = Flask(__name__)
@@ -66,17 +66,16 @@ def transform_ccu():
     form = TransformationForm()
     return render_template('ccu_transform.html', title='Canonical Transform', form=form)
 
-def canonical_transform(unit_in_string, unit_out_string, val_in):
+def canonical_transform(unit_src_string, unit_dst_string, val_in):
 
     s = CanonicalCompoundUnitTransformation.get_instance()
 
-    canonical_json_in, canonical_json_out = s.get_canonical_json_reprs(unit_in_string, unit_out_string)
-    num_out, error = s.canonical_transform(unit_in_string, unit_out_string, val_in)
+    ccu_src = s.get_canonical_compound_unit_dict_from_string(unit_src_string)
+    ccu_dst = s.get_canonical_compound_unit_dict_from_string(unit_dst_string)
 
-    # for easier debug print error meaning
-    ret_str_map = ["OK", "TRANSFORMATION_IS_NOT_SYMMETRIC", "DIMENSION_MISMATCH", "TRANSFORMATION_UNKNOWN", "UNSUPPORTED_FLOW"]
-    error_string = ret_str_map[error]
-    return jsonify(canonical_json_in, canonical_json_out, num_out, error, error_string)
+    num_out, error = s.canonical_transform(unit_src_string, unit_dst_string, val_in)
+
+    return jsonify(ccu_src, ccu_dst, num_out, error, RET_STR_MAP[error])
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
