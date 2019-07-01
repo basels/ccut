@@ -2,7 +2,7 @@
 The UnitMatch class is used to find the best unit match for a given string.
 '''
 
-from main.symbol_map import SymbolMap, INDEX_NAME_URI, INDEX_NAME_QUANTITYKIND, INDEX_NAME_PREFIX, \
+from .symbol_map import SymbolMap, INDEX_NAME_URI, INDEX_NAME_QUANTITYKIND, INDEX_NAME_PREFIX, \
                             INDEX_NAME_CONVERSION_MULTIPLIER, INDEX_NAME_CONVERSION_OFFSET, \
                             INDEX_NAME_PREFIX_CONVERSION_MULTIPLIER, INDEX_NAME_PREFIX_CONVERSION_OFFSET
 

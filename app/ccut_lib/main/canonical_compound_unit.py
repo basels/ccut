@@ -3,12 +3,12 @@ The CanonicalCompoundUnit class wraps the CompoundUnit class
 and binds it to a dimension.
 '''
 
-from main.canonical_simple_unit import CanonicalSimpleUnit, QUDT_PROPERTIES_NAMESPACE, CCUT_NAMESPACE
-from main.compound_unit import CompoundUnit
-from main.dimension import DimensionVector
-from main.symbol_map import SymbolMap
-from main.unit import Unit
-from main.unit_match import UnitMatch
+from .canonical_simple_unit import CanonicalSimpleUnit, QUDT_PROPERTIES_NAMESPACE, CCUT_NAMESPACE
+from .compound_unit import CompoundUnit
+from .dimension import DimensionVector
+from .symbol_map import SymbolMap
+from .unit import Unit
+from .unit_match import UnitMatch
 from typing import *
 
 class CanonicalCompoundUnit:

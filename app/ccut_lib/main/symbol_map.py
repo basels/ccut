@@ -5,10 +5,10 @@ and SI prefixes ('si_prefix_map').
 '''
 
 from json import load
-from main.config import Config
-from main.qudt_unit import QudtUnit
-from main.rdf_parser import RDFParser
-from main.si_prefix import SIPrefix
+from .config import Config
+from .qudt_unit import QudtUnit
+from .rdf_parser import RDFParser
+from .si_prefix import SIPrefix
 
 INDEX_NAME_URI = 'uri'
 INDEX_NAME_QUANTITYKIND = 'quantityKind'

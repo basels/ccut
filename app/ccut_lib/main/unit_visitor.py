@@ -4,8 +4,8 @@ Unit and CompoundUnit instances.
 '''
 
 from arpeggio import PTNodeVisitor
-from main.compound_unit import CompoundUnit
-from main.unit import Unit
+from .compound_unit import CompoundUnit
+from .unit import Unit
 
 class UnitVisitor(PTNodeVisitor):
     def visit_compound_unit(self, node, children):

@@ -5,10 +5,10 @@ unit conversions between atomic and compound units of measurement (given as stri
 
 from arpeggio import visit_parse_tree
 from copy import deepcopy
-from main.canonical_compound_unit import CanonicalCompoundUnit
-from main.canonical_simple_unit import QUDT_PROPERTIES_NAMESPACE, CCUT_NAMESPACE
-from main.unit_parser import UnitParser
-from main.unit_visitor import UnitVisitor
+from .canonical_compound_unit import CanonicalCompoundUnit
+from .canonical_simple_unit import QUDT_PROPERTIES_NAMESPACE, CCUT_NAMESPACE
+from .unit_parser import UnitParser
+from .unit_visitor import UnitVisitor
 from re import search
 
 RET_STR_MAP = ["OK", "TRANSFORMATION_IS_NOT_SYMMETRIC", "DIMENSION_MISMATCH", "TRANSFORMATION_UNKNOWN", "UNSUPPORTED_FLOW"]
@@ -198,3 +198,15 @@ class CanonicalCompoundUnitTransformation:
             return 0.0, RET_VAL_TRANS_NOT_SYMMETRIC # ERROR
 
         return uout, feedback_str
+
+    def ccu_repr(self, unit_string):
+        parser = UnitParser().get_parser()
+        parsed_unit = visit_parse_tree(parser.parse(unit_string), UnitVisitor(debug=False))
+        ccu = CanonicalCompoundUnit(parsed_unit).get_unit_object()
+        return ccu
+
+    def ccu2ccu_transform(self, unit_src_string, unit_dst_string, val_in):
+        ccu_src = self.get_canonical_compound_unit_dict_from_string(unit_src_string)
+        ccu_dst = self.get_canonical_compound_unit_dict_from_string(unit_dst_string)
+        num_out, error = self.canonical_transform(unit_src_string, unit_dst_string, val_in)
+        return ccu_src, ccu_dst, num_out, error, RET_STR_MAP[error]

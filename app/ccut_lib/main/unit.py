@@ -3,7 +3,7 @@ The Unit class defines a class for atomic unit of measurement.
 It has symbol, multiplier, exponent and comment attributes.
 '''
 
-from main.currency_symbols import CurrencySymbols
+from .currency_symbols import CurrencySymbols
 
 class Unit:
     def __init__(self, symbol, multiplier, exponent, comment):

@@ -4,7 +4,7 @@ how to read a language of compound and atomic units.
 '''
 
 from arpeggio import RegExMatch as _, Optional, ZeroOrMore, EOF, ParserPython
-from main.currency_symbols import CurrencySymbols
+from .currency_symbols import CurrencySymbols
 
 # "kg/m/s^2"
 # "g/cm/s^2"

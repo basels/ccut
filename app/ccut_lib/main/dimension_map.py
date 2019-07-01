@@ -4,7 +4,7 @@ It holds a map (dictionary) of dimensions ('qd_map').
 '''
 
 from json import load
-from main.config import Config
+from .config import Config
 
 # Use as singleton class
 class DimensionMap:

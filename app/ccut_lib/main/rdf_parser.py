@@ -3,7 +3,7 @@ The RDFParser class is used to parse the qudt unit.owl ontology file
 and create instances of QudtUnit from the file.
 '''
 
-from main.qudt_unit import QudtUnit
+from .qudt_unit import QudtUnit
 from os.path import isfile, join, splitext
 from rdflib import Graph, RDF, RDFS, OWL, BNode, URIRef, Namespace
 
