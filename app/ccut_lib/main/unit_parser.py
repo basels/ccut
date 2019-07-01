@@ -3,9 +3,7 @@ The UnitParser class uses arpeggio to define the grammer of
 how to read a language of compound and atomic units.
 '''
 
-from arpeggio import Optional, ZeroOrMore, EOF
-from arpeggio import RegExMatch as _
-from arpeggio import ParserPython
+from arpeggio import RegExMatch as _, Optional, ZeroOrMore, EOF, ParserPython
 from main.currency_symbols import CurrencySymbols
 
 # "kg/m/s^2"

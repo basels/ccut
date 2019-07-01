@@ -3,12 +3,12 @@ The CanonicalSimpleUnit class wraps the Unit class
 and binds it to a dimension.
 '''
 
-from main.unit_match import UnitMatch
-from main.unit import Unit
+from main.dimension_map import DimensionMap
 from main.symbol_map import SymbolMap, INDEX_NAME_URI, INDEX_NAME_PREFIX, INDEX_NAME_QUANTITYKIND, \
                             INDEX_NAME_CONVERSION_MULTIPLIER, INDEX_NAME_CONVERSION_OFFSET, \
                             INDEX_NAME_PREFIX_CONVERSION_MULTIPLIER, INDEX_NAME_PREFIX_CONVERSION_OFFSET
-from main.dimension_map import DimensionMap
+from main.unit import Unit
+from main.unit_match import UnitMatch
 
 QUDT_V1_FIXED_ONTOLOGY_PREF = "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#"
 QUDT_PROPERTIES_NAMESPACE = 'qudtp'

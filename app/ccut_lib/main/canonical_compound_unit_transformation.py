@@ -3,13 +3,13 @@ The CanonicalCompoundUnitTransformation class is used to perform
 unit conversions between atomic and compound units of measurement (given as strings).
 '''
 
-from copy import deepcopy
-from re import search
 from arpeggio import visit_parse_tree
-from main.unit_parser import UnitParser
-from main.unit_visitor import UnitVisitor
+from copy import deepcopy
 from main.canonical_compound_unit import CanonicalCompoundUnit
 from main.canonical_simple_unit import QUDT_PROPERTIES_NAMESPACE, CCUT_NAMESPACE
+from main.unit_parser import UnitParser
+from main.unit_visitor import UnitVisitor
+from re import search
 
 RET_STR_MAP = ["OK", "TRANSFORMATION_IS_NOT_SYMMETRIC", "DIMENSION_MISMATCH", "TRANSFORMATION_UNKNOWN", "UNSUPPORTED_FLOW"]
 RET_VAL_OK = 0

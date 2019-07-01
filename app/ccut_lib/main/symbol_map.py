@@ -4,11 +4,11 @@ It holds a map (dictionary) of symbols ('symbol_map'), labels ('label_map')
 and SI prefixes ('si_prefix_map').
 '''
 
+from json import load
+from main.config import Config
+from main.qudt_unit import QudtUnit
 from main.rdf_parser import RDFParser
 from main.si_prefix import SIPrefix
-from main.qudt_unit import QudtUnit
-from main.config import Config
-from json import load
 
 INDEX_NAME_URI = 'uri'
 INDEX_NAME_QUANTITYKIND = 'quantityKind'

@@ -3,8 +3,8 @@ The DimensionMap is a singleton class to be accessed and used by the service.
 It holds a map (dictionary) of dimensions ('qd_map').
 '''
 
-from main.config import Config
 from json import load
+from main.config import Config
 
 # Use as singleton class
 class DimensionMap:

@@ -1,17 +1,16 @@
+''' This is the API entry point (and Flask front end) '''
+
 from arpeggio import visit_parse_tree
-from flask import Flask, request, jsonify, render_template, url_for, flash
+from flask import Flask, request, jsonify, render_template
+from main.forms import TransformationForm, RepresentationForm
+from main.canonical_compound_unit import CanonicalCompoundUnit
+from main.canonical_compound_unit_transformation import CanonicalCompoundUnitTransformation, RET_STR_MAP
+from main.config import Config
+from main.dimension_map import DimensionMap
+from main.symbol_map import SymbolMap
+from main.unit_match import UnitMatch
 from main.unit_parser import UnitParser
 from main.unit_visitor import UnitVisitor
-from main.canonical_compound_unit import CanonicalCompoundUnit
-############ Web Forms ############
-from main.forms import TransformationForm
-from main.config import Config
-############ mappings and unit-match UT ############
-from main.unit_match import UnitMatch
-from main.symbol_map import SymbolMap
-from main.dimension_map import DimensionMap
-from main.canonical_compound_unit_transformation import CanonicalCompoundUnitTransformation, RET_STR_MAP
-############
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -37,15 +36,19 @@ def best_unit_match_test():
     unit = UnitMatch.find_best_unit_match(unit_string, s)
     return jsonify(unit)
 
-@app.route("/get_canonical_json")
+@app.route('/get_canonical_json', methods=['GET', 'POST'])
 def get_canonical_json():
-    unit_string = request.args.get("u")
-
+    if "u" in request.args:
+        unit_string = request.args.get("u")
+        return ccu_repr(unit_string)
+    form = RepresentationForm()
+    return render_template('ccu_represent.html', title='Canonical Representation', form=form)
+        
+def ccu_repr(unit_string):
     parser = UnitParser().get_parser()
     parsed_unit = visit_parse_tree(parser.parse(unit_string), UnitVisitor(debug=False))
-    canonical_json = CanonicalCompoundUnit(parsed_unit).get_unit_object()
-
-    return jsonify(canonical_json)
+    ccu = CanonicalCompoundUnit(parsed_unit).get_unit_object()
+    return jsonify(ccu)
 
 @app.route('/trans_form', methods=['GET', 'POST'])
 def transform_ccu():
@@ -53,28 +56,15 @@ def transform_ccu():
         unit_in_string = request.args.get("in_unit")
         unit_out_string = request.args.get("out_unit")
         val_in = float(request.args.get("in_val"))
-        return canonical_transform(unit_in_string, unit_out_string, val_in)
-    
-    # if form.validate_on_submit():
-    #    flash('Transformation requested for in_unit {}, out_unit={}, in_val={}'.format(
-    #        form.in_unit.data, form.out_unit.data, form.in_val.data))
-    #    return canonical_transform(form.in_unit.data, form.out_unit.data, form.in_val.data)
-
-    # we can parse the return object using:
-    # return render_template('generic.html', data=some_obj.get_data().decode("utf-8"))
-
+        return ccu2ccu_transform(unit_in_string, unit_out_string, val_in)
     form = TransformationForm()
     return render_template('ccu_transform.html', title='Canonical Transform', form=form)
 
-def canonical_transform(unit_src_string, unit_dst_string, val_in):
-
+def ccu2ccu_transform(unit_src_string, unit_dst_string, val_in):
     s = CanonicalCompoundUnitTransformation.get_instance()
-
     ccu_src = s.get_canonical_compound_unit_dict_from_string(unit_src_string)
     ccu_dst = s.get_canonical_compound_unit_dict_from_string(unit_dst_string)
-
     num_out, error = s.canonical_transform(unit_src_string, unit_dst_string, val_in)
-
     return jsonify(ccu_src, ccu_dst, num_out, error, RET_STR_MAP[error])
 
 if __name__ == "__main__":
