@@ -6,11 +6,12 @@ how to read a language of compound and atomic units.
 from arpeggio import Optional, ZeroOrMore, EOF
 from arpeggio import RegExMatch as _
 from arpeggio import ParserPython
+from main.currency_symbols import CurrencySymbols
 
 # "kg/m/s^2"
 # "g/cm/s^2"
 
-def symbol(): return ["deg C", _(r'[a-zA-Z]+')]  # Matches ab, Cd, EF, g
+def symbol(): return ["deg C", _(r'[a-zA-Z]+'), list(CurrencySymbols.currency_symbols.keys())]  # Matches ab, Cd, EF, g, $
 
 def number(): return Optional("-"), _(r'\d*\.\d+|\d+\/\d+|\d+')  # Matches 1.2, .2, 12, 1/2, -1, -1/2 #Does not match 1.2/3, 1.
 
