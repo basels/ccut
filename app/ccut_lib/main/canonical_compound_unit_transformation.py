@@ -64,8 +64,15 @@ class CanonicalCompoundUnitTransformation:
         exponent = 1.0
         exponent_index_str = f'{CCUT_NAMESPACE}:exponent'
         if exponent_index_str in atomic_unit_part_dict:
-            exponent = int(atomic_unit_part_dict[exponent_index_str])
+            exponent = float(atomic_unit_part_dict[exponent_index_str])
         return exponent
+
+    def get_atomic_unit_multiplier(self, atomic_unit_part_dict):
+        multiplier = 1.0
+        multiplier_index_str = f'{CCUT_NAMESPACE}:multiplier'
+        if multiplier_index_str in atomic_unit_part_dict:
+            multiplier = float(atomic_unit_part_dict[multiplier_index_str])
+        return multiplier
 
     def get_atomic_unit_symbol(self, atomic_unit_part_dict):
         symbol_index_str = f'{QUDT_PROPERTIES_NAMESPACE}:symbol'
@@ -87,6 +94,7 @@ class CanonicalCompoundUnitTransformation:
             src_pt_dim   = atomic_pt_src[f'{CCUT_NAMESPACE}:hasDimension']
             src_pt_exp   = self.get_atomic_unit_exponent(atomic_pt_src)
             src_pt_smbl  = self.get_atomic_unit_symbol(atomic_pt_src)
+            src_pt_mlt   = self.get_atomic_unit_multiplier(atomic_pt_src)
 
             ''' iterate over dst compound unit and check
             if we have a an atomic unit with the same symbol and exponent '''
@@ -96,10 +104,10 @@ class CanonicalCompoundUnitTransformation:
                 dst_pt_dim   = atomic_pt_src[f'{CCUT_NAMESPACE}:hasDimension']
                 dst_pt_exp   = self.get_atomic_unit_exponent(atomic_pt_dst)
                 dst_pt_smbl  = self.get_atomic_unit_symbol(atomic_pt_dst)
+                dst_pt_mlt   = self.get_atomic_unit_multiplier(atomic_pt_dst)
 
                 dst_type_dim_valid, _ = self.canonical_transform_check_type_and_dim(dst_pt_type, dst_pt_dim)
-                # TODO: take multipliers into account!
-                if src_pt_smbl == dst_pt_smbl and src_pt_exp == dst_pt_exp:
+                if src_pt_smbl == dst_pt_smbl and src_pt_exp == dst_pt_exp and src_pt_mlt == dst_pt_mlt:
                     self.get_compound_unit_parts(compound_unit_dict_src).pop(atomic_idx_src_orig)
                     atomic_idx_src_orig -= 1
                     self.get_compound_unit_parts(compound_unit_dict_dst).pop(atomic_idx_dst)
@@ -130,7 +138,6 @@ class CanonicalCompoundUnitTransformation:
         accu_offset = 0
         feedback_str = RET_VAL_OK
 
-        # TODO: take multipliers into account!
         # iterate over each part in the INPUT-canonical-unit
         for atomic_pt_src in self.get_compound_unit_parts(ccu_src):
 
@@ -138,6 +145,7 @@ class CanonicalCompoundUnitTransformation:
             curr_type_in  = atomic_pt_src[f'{QUDT_PROPERTIES_NAMESPACE}:quantityKind']
             curr_dim_in   = atomic_pt_src[f'{CCUT_NAMESPACE}:hasDimension']
             uin_power     = self.get_atomic_unit_exponent(atomic_pt_src)
+            curr_mlt_in   = self.get_atomic_unit_multiplier(atomic_pt_src)
 
             dimstr_in, dimexp_in = self.get_dimstr_dimexp_from_dimension(curr_dim_in)
             atomic_pt_src['_metadata:total_dimension'] = dimexp_in * uin_power
@@ -151,8 +159,8 @@ class CanonicalCompoundUnitTransformation:
             for atomic_idx_dst, atomic_pt_dst in enumerate(ccu_dst_copy):
 
                 u_out_power = self.get_atomic_unit_exponent(atomic_pt_dst)
-
                 curr_dim_out  = atomic_pt_dst[f'{CCUT_NAMESPACE}:hasDimension']
+                curr_mlt_out  = self.get_atomic_unit_multiplier(atomic_pt_dst)
 
                 dimstr_out, dimexp_out = self.get_dimstr_dimexp_from_dimension(curr_dim_out)
                 atomic_pt_dst['_metadata:total_dimension'] = dimexp_out * u_out_power
@@ -175,6 +183,7 @@ class CanonicalCompoundUnitTransformation:
                 prfx_conv_offs = atomic_pt_src[f'{CCUT_NAMESPACE}:prefixConversionOffset']
                 uin_no_prfx = (uin_no_prfx * pow(prfx_conv_mult, uin_power)) + prfx_conv_offs
                 accu_offset += prfx_conv_offs
+            uin_no_prfx = (uin_no_prfx * pow(curr_mlt_in, uin_power))
             qu_in_conv_mult  = atomic_pt_src[f'{QUDT_PROPERTIES_NAMESPACE}:conversionMultiplier']
             qu_in_conv_off   = atomic_pt_src[f'{QUDT_PROPERTIES_NAMESPACE}:conversionOffset']
             qu_out_conv_mult = curr_atomic_pt_dst[f'{QUDT_PROPERTIES_NAMESPACE}:conversionMultiplier']
@@ -184,6 +193,7 @@ class CanonicalCompoundUnitTransformation:
             accu_offset += qu_in_conv_off
             uout = (uin_to_base - qu_out_conv_off) / pow(qu_out_conv_mult, u_out_power)
             accu_offset += qu_out_conv_off
+            uout = uout / pow(curr_mlt_out, u_out_power)
             # calcuate to match output prefix
             if f'{CCUT_NAMESPACE}:prefix' in curr_atomic_pt_dst:
                 prfx_conv_mult = curr_atomic_pt_dst[f'{CCUT_NAMESPACE}:prefixConversionMultiplier']

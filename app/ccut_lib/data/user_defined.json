@@ -17,7 +17,7 @@
         "abbr": "SSP",
         "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Dimensionless",
         "conversion_offset": 0,
-        "conversion_multiplier": 68
+        "conversion_multiplier": 0.01470588235
     }
 }
 
