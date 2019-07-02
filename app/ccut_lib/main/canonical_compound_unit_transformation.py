@@ -98,6 +98,7 @@ class CanonicalCompoundUnitTransformation:
                 dst_pt_smbl  = self.get_atomic_unit_symbol(atomic_pt_dst)
 
                 dst_type_dim_valid, _ = self.canonical_transform_check_type_and_dim(dst_pt_type, dst_pt_dim)
+                # TODO: take multipliers into account!
                 if src_pt_smbl == dst_pt_smbl and src_pt_exp == dst_pt_exp:
                     self.get_compound_unit_parts(compound_unit_dict_src).pop(atomic_idx_src_orig)
                     atomic_idx_src_orig -= 1
@@ -129,6 +130,7 @@ class CanonicalCompoundUnitTransformation:
         accu_offset = 0
         feedback_str = RET_VAL_OK
 
+        # TODO: take multipliers into account!
         # iterate over each part in the INPUT-canonical-unit
         for atomic_pt_src in self.get_compound_unit_parts(ccu_src):
 

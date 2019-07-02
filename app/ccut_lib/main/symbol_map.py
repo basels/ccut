@@ -19,7 +19,7 @@ INDEX_NAME_PREFIX_CONVERSION_MULTIPLIER = 'prefix_conversion_multiplier'
 INDEX_NAME_PREFIX_CONVERSION_OFFSET = 'prefix_conversion_offset'
 
 # TODO: remove
-DEBUG_WRITE_FILE_HNDLR = open('/Users/baselshbita/repos/ccut/app/ccut_lib/DEBUG_FILE.csv', 'w', encoding='utf-8') 
+# DEBUG_WRITE_FILE_HNDLR = open('/Users/baselshbita/repos/ccut/app/ccut_lib/DEBUG_FILE.csv', 'w', encoding='utf-8') 
 PRINT_KEYS = ['uri', 'symbol', 'abbr', 'label', 'quantity_kind', 'conversion_multiplier', 'conversion_offset']
 
 def print_to_debug_file(dict_to_print):
@@ -127,6 +127,22 @@ class SymbolMap:
             if hasattr(qu, 'label'):
                 self.label_map[qu.label.lower()] = qu
 
+        # TODO: make it more readable
+        # TODO: fix issue where Namespace of URI always changes back to QUDT
+        for uri, unit_attrs in self.udu.items():
+            if 'symbol' in unit_attrs:
+                new_symbol = unit_attrs['symbol']
+                if new_symbol not in self.symbol_map:
+                    n_qu = QudtUnit()
+                    n_qu.set_uri(uri)
+                    n_qu.set_symbol(new_symbol)
+                    n_qu.set_label(unit_attrs['label'])
+                    n_qu.set_abbr(unit_attrs['abbr'])
+                    n_qu.set_quantity_kind(unit_attrs['quantityKind'])
+                    n_qu.set_conversion_multiplier(float(unit_attrs['conversion_multiplier']))
+                    n_qu.set_conversion_offset(float(unit_attrs['conversion_offset']))
+                    self.symbol_map[new_symbol] = n_qu
+
         # Remove some symbols from symbol map
         # Remove units like km, ms which are si prefix + base symbol
         # Check prefix = k, conversion_multiplier = 1000: matches - so same units so don't process
@@ -145,6 +161,7 @@ class SymbolMap:
             del self.label_map['kilogram']
 
         # debug
+        '''
         DEBUG_WRITE_FILE_HNDLR.write('index,')
         for print_key in PRINT_KEYS:
             DEBUG_WRITE_FILE_HNDLR.write(print_key + ',')
@@ -152,4 +169,5 @@ class SymbolMap:
         print_to_debug_file(self.symbol_map)
         print_to_debug_file(self.label_map)
         print_to_debug_file(self.si_prefix_map)
+        '''
 
