@@ -1,0 +1,72 @@
+{
+    "namespaces": {
+        "q": "http://data.nasa.gov/qudt/owl/unit#"
+    },
+    "instances": {
+        "yr": {
+            "q:Year365Day": 1,
+            "q:YearSidereal": 12
+        },
+        "gal": {
+            "q:GallonUS": 1,
+            "q:GallonImperial": 2
+        },
+        "mi": {
+            "q:MileInternational": 1,
+            "q:MileUSStatute": 2
+        },
+        "F": {
+            "q:Farad": 1,
+            "q:Faraday": 2
+        },
+        "C": {
+            "q:Coulomb": 1,
+            "q:Cord": 2
+        },
+        "b": {
+            "q:Bit": 1,
+            "q:Barn": 2
+        },
+        "lbm": {
+            "q:PoundMass": 1,
+            "q:PoundTroy": 2
+        },
+        "L": {
+            "q:Liter": 1,
+            "q:Lambert": 2
+        },
+        "G": {
+            "q:Gauss": 1,
+            "q:Gravity": 2
+        },
+        "fm": {
+            "q:Femtometer": 1,
+            "q:Fermi": 2
+        },
+        "pt": {
+            "q:Point": 1,
+            "q:LiquidPintUS": 2
+        },
+        "ft": {
+            "q:Foot": 1,
+            "q:FootUSSurvey": 2
+        },
+        "ton": {
+            "q:TonShort": 1,
+            "q:TonLong": 2
+        },
+        "rad": {
+            "q:Radian": 1,
+            "q:Rad": 2
+        },
+        "Gi": {
+            "q:Gilbert": 1,
+            "q:Gibi": 2
+        },
+        "oz": {
+            "q:LiquidOunceUS": 1,
+            "q:OunceImperial": 2,
+            "q:OunceTroy": 3
+        }
+    }
+}

@@ -19,8 +19,7 @@ def hello():
 
 @app.route("/get_symbol_map")
 def get_symbol_map():
-    s = SymbolMap.get_instance()
-    return jsonify(list(s.symbol_map), list(s.label_map), list(s.si_prefix_map))
+    return render_template('generic.html', data='Under maintenance...')
 
 @app.route("/get_dimension_map")
 def get_dimension_map():

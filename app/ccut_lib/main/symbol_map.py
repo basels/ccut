@@ -18,19 +18,22 @@ INDEX_NAME_CONVERSION_OFFSET = 'conversion_offset'
 INDEX_NAME_PREFIX_CONVERSION_MULTIPLIER = 'prefix_conversion_multiplier'
 INDEX_NAME_PREFIX_CONVERSION_OFFSET = 'prefix_conversion_offset'
 
+'''
 # TODO: remove
-# DEBUG_WRITE_FILE_HNDLR = open('/Users/baselshbita/repos/ccut/app/ccut_lib/DEBUG_FILE.csv', 'w', encoding='utf-8') 
+DEBUG_WRITE_FILE_HNDLR = open('/Users/baselshbita/Desktop/DEBUG_FILE.csv', 'w', encoding='utf-8') 
 PRINT_KEYS = ['uri', 'symbol', 'abbr', 'label', 'quantity_kind', 'conversion_multiplier', 'conversion_offset']
+
 
 def print_to_debug_file(dict_to_print):
     for keyd, vald in dict_to_print.items():
         DEBUG_WRITE_FILE_HNDLR.write(keyd + ',')
-        for print_key in PRINT_KEYS:
-            val_to_print = ''
-            if hasattr(vald, print_key):
-                val_to_print = str(getattr(vald, print_key)).strip()
-            DEBUG_WRITE_FILE_HNDLR.write(str(val_to_print + ','))
-        DEBUG_WRITE_FILE_HNDLR.write('\n')
+    for print_key in PRINT_KEYS:
+        val_to_print = ''
+        if hasattr(vald, print_key):
+            val_to_print = str(getattr(vald, print_key)).strip()
+        DEBUG_WRITE_FILE_HNDLR.write(str(val_to_print + ','))
+    DEBUG_WRITE_FILE_HNDLR.write('\n')
+'''
 
 # Use as singleton class
 class SymbolMap:
@@ -38,37 +41,38 @@ class SymbolMap:
     instance = None
 
     def __init__(self):
+
         self.symbol_map = dict()
         self.label_map = dict()
         self.si_prefix_map = dict()
 
+        # load QUDT files
         for ontof in Config.DATA_QUDT_V1_ONTO_FILES:
             self.rp = RDFParser(Config.DATA_DIR, ontof)
-
-        # user-defined-units list
-        self.udu = list()
+        # user-defined-units
         with open(f'{Config.DATA_DIR}/{Config.DATA_USER_DEFINED_UNITS_FILE}', 'r') as read_file:
             self.udu = load(read_file)
-
         # label extensions for existing instances
         with open(f'{Config.DATA_DIR}/{Config.DATA_LABELS_EXTENSION_MAP_FILE}', 'r') as read_file:
             self.lbl_ex = load(read_file)
 
+        self.init_list_of_predfined_priorities()
         self.construct_map()
+        self.add_user_defined_instances()
+
         del self.rp
         del self.udu
         del self.lbl_ex
+        del self.udp
 
     @staticmethod
     def get_instance() -> 'SymbolMap':
         if SymbolMap.instance is None:
             SymbolMap.instance = SymbolMap()
-
         return SymbolMap.instance
 
     def is_qudt_unit_with_si_prefix(self, qu: QudtUnit):
-        # Return true for km, ms, etc
-        # False for mX
+        ''' Return True for km, ms, etc, False for mX '''
         if not hasattr(qu, INDEX_NAME_CONVERSION_MULTIPLIER) or not hasattr(qu, 'symbol'):
             return False
 
@@ -84,51 +88,65 @@ class SymbolMap:
 
         return False
 
-    def construct_map(self):
-        # Special classes to handle
-        # qudt:DerivedUnit
-        # qudt:DecimalPrefixUnit
+    def init_list_of_predfined_priorities(self):
+        # pre-defined priorities
+        with open(f'{Config.DATA_DIR}/{Config.DATA_PRE_DEFINED_PRIO_FILE}', 'r') as read_file:
+            glob_udp = load(read_file)
+        self.udp = dict()
+        for symb_key, symb_opts in glob_udp['instances'].items():
+            self.udp[symb_key] = dict()
+            for inst_short_uri, inst_prio in symb_opts.items():
+                inst_long_uri = inst_short_uri
+                ns_prfx_candidate = inst_short_uri.split(':')[0]
+                if ns_prfx_candidate in glob_udp['namespaces']:
+                    inst_long_uri = glob_udp['namespaces'][ns_prfx_candidate] + ''.join(inst_short_uri.split(':')[1:])
+                self.udp[symb_key][inst_long_uri] = inst_prio
 
-        for qu in self.rp.get_details():
+    def get_uri_prio(self, symbol, uri):
+        if symbol in self.udp:
+            if uri in self.udp[symbol]:
+                return self.udp[symbol][uri]
+        return 1
 
-            qu_str_uri = qu.uri.strip()
+    def update_symbol_and_labels_maps(self, qu):
+        # clean uri string
+        qu_str_uri = qu.uri.strip()
 
-            '''
-            # TODO: solve duplications
-            if hasattr(qu, 'symbol') and qu.symbol in self.symbol_map:
-                existing_uri = self.symbol_map[qu.symbol].uri.strip()
-                if qu_str_uri != existing_uri:
-                    print(f'symbol already defined: {qu.symbol} --> {existing_uri} / {qu_str_uri}')
-            '''
+        # label map
+        if hasattr(qu, 'label') and qu.label not in self.label_map:
+            # TODO: qu.label.lower() ??
+            # TODO: check if there are cases where it already exists in map
+            self.label_map[qu.label] = qu
+        # check if user supplied additional labels
+        if qu_str_uri in self.lbl_ex:
+            for ex_label in self.lbl_ex[qu_str_uri]:
+                if ex_label not in self.label_map:
+                    self.label_map[ex_label] = qu
+            del self.lbl_ex[qu_str_uri]
 
-            if qu_str_uri in self.udu and qu.symbol not in self.symbol_map:
-                ud_qu = self.udu[qu_str_uri]
-                for key, val in ud_qu.items():
-                    if not hasattr(qu, key) and key in ud_qu:
-                        setattr(qu, key, ud_qu[key])
+        # symbol map
+        symb = qu.symbol
+        prio = self.get_uri_prio(symb, qu_str_uri)
+        if symb not in self.symbol_map:
+            # create the first instance in the list
+            self.symbol_map[symb] = [(prio, qu)]
+            return
+        # symbol exists, check if diff uri
+        curr_list = self.symbol_map[symb]
+        insrt_qidx = 0
+        for qinst in curr_list:
+            existing_prio = qinst[0]
+            existing_uri = qinst[1].uri.strip()
+            if qu_str_uri == existing_uri:
+                return
+            if existing_prio < prio:
+                # this index is to determine where we push the new item
+                insrt_qidx += 1
+        # reached here without finding uri, insert to PQ
+        self.symbol_map[symb].insert(insrt_qidx, (prio, qu))
 
-            if not hasattr(qu, INDEX_NAME_CONVERSION_MULTIPLIER):
-                continue
-
-            if hasattr(qu, 'label') and SIPrefix.is_si_prefix(qu.label.lower()):
-                self.si_prefix_map[qu.symbol] = qu
-                self.si_prefix_map[qu.label.lower()] = qu
-                continue
-
-            if hasattr(qu, 'symbol'):
-                self.symbol_map[qu.symbol] = qu
-                # check if user supplied additional labels
-                if qu_str_uri in self.lbl_ex:
-                    lbls_lst = self.lbl_ex[qu_str_uri]
-                    for ex_label in lbls_lst:
-                        if ex_label not in self.label_map:
-                            self.label_map[ex_label] = qu
-
-            if hasattr(qu, 'label'):
-                self.label_map[qu.label.lower()] = qu
-
-        # TODO: make it more readable
-        # TODO: fix issue where Namespace of URI always changes back to QUDT
+    def add_user_defined_instances(self):
+        # check if user provided additional instances (non QUDT)
         for uri, unit_attrs in self.udu.items():
             if 'symbol' in unit_attrs:
                 new_symbol = unit_attrs['symbol']
@@ -141,7 +159,38 @@ class SymbolMap:
                     n_qu.set_quantity_kind(unit_attrs['quantityKind'])
                     n_qu.set_conversion_multiplier(float(unit_attrs['conversion_multiplier']))
                     n_qu.set_conversion_offset(float(unit_attrs['conversion_offset']))
-                    self.symbol_map[new_symbol] = n_qu
+                    self.update_symbol_and_labels_maps(n_qu)
+
+    def construct_map(self):
+        # Special classes to handle
+        # qudt:DerivedUnit
+        # qudt:DecimalPrefixUnit
+
+        for qu in self.rp.get_details():
+            # clean uri string of the current qu (QudtUnit) instance
+            qu_str_uri = qu.uri.strip()
+            
+            # check if user has provided additional attributes for this qu
+            if qu_str_uri in self.udu and qu.symbol not in self.symbol_map:
+                ud_qu = self.udu[qu_str_uri]
+                for key, val in ud_qu.items():
+                    if not hasattr(qu, key) and key in ud_qu:
+                        setattr(qu, key, ud_qu[key])
+                del self.udu[qu_str_uri]
+
+            # if qu doesn't have conversion multiplier, skip
+            if not hasattr(qu, INDEX_NAME_CONVERSION_MULTIPLIER):
+                continue
+
+            # if qu label is si-prefix then add to si_prefix_map and skip
+            if hasattr(qu, 'label') and SIPrefix.is_si_prefix(qu.label.lower()):
+                self.si_prefix_map[qu.symbol] = qu
+                self.si_prefix_map[qu.label.lower()] = qu
+                continue
+
+            # if qu has symbol (and conversion multiplier), add to symbol_map
+            if hasattr(qu, 'symbol'):
+                self.update_symbol_and_labels_maps(qu)
 
         # Remove some symbols from symbol map
         # Remove units like km, ms which are si prefix + base symbol
@@ -159,15 +208,3 @@ class SymbolMap:
             del self.symbol_map['kg']
         if 'kilogram' in self.label_map:
             del self.label_map['kilogram']
-
-        # debug
-        '''
-        DEBUG_WRITE_FILE_HNDLR.write('index,')
-        for print_key in PRINT_KEYS:
-            DEBUG_WRITE_FILE_HNDLR.write(print_key + ',')
-        DEBUG_WRITE_FILE_HNDLR.write('\n')
-        print_to_debug_file(self.symbol_map)
-        print_to_debug_file(self.label_map)
-        print_to_debug_file(self.si_prefix_map)
-        '''
-

@@ -12,3 +12,4 @@ class Config(object):
     DATA_USER_DEFINED_UNITS_FILE = 'user_defined.json'
     DATA_DIMENSIONS_MAP_FILE = 'quantity_dimension.json'
     DATA_LABELS_EXTENSION_MAP_FILE = 'labels_extension.json'
+    DATA_PRE_DEFINED_PRIO_FILE = 'uri_prios.json'
