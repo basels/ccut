@@ -18,23 +18,6 @@ INDEX_NAME_CONVERSION_OFFSET = 'conversion_offset'
 INDEX_NAME_PREFIX_CONVERSION_MULTIPLIER = 'prefix_conversion_multiplier'
 INDEX_NAME_PREFIX_CONVERSION_OFFSET = 'prefix_conversion_offset'
 
-'''
-# TODO: remove
-DEBUG_WRITE_FILE_HNDLR = open('/Users/baselshbita/Desktop/DEBUG_FILE.csv', 'w', encoding='utf-8') 
-PRINT_KEYS = ['uri', 'symbol', 'abbr', 'label', 'quantity_kind', 'conversion_multiplier', 'conversion_offset']
-
-
-def print_to_debug_file(dict_to_print):
-    for keyd, vald in dict_to_print.items():
-        DEBUG_WRITE_FILE_HNDLR.write(keyd + ',')
-    for print_key in PRINT_KEYS:
-        val_to_print = ''
-        if hasattr(vald, print_key):
-            val_to_print = str(getattr(vald, print_key)).strip()
-        DEBUG_WRITE_FILE_HNDLR.write(str(val_to_print + ','))
-    DEBUG_WRITE_FILE_HNDLR.write('\n')
-'''
-
 # Use as singleton class
 class SymbolMap:
 
@@ -162,9 +145,9 @@ class SymbolMap:
                     self.update_symbol_and_labels_maps(n_qu)
 
     def construct_map(self):
-        # Special classes to handle
-        # qudt:DerivedUnit
-        # qudt:DecimalPrefixUnit
+        ''' Special classes to handle
+                qudt:DerivedUnit
+                qudt:DecimalPrefixUnit '''
 
         for qu in self.rp.get_details():
             # clean uri string of the current qu (QudtUnit) instance
@@ -192,11 +175,11 @@ class SymbolMap:
             if hasattr(qu, 'symbol'):
                 self.update_symbol_and_labels_maps(qu)
 
-        # Remove some symbols from symbol map
-        # Remove units like km, ms which are si prefix + base symbol
-        # Check prefix = k, conversion_multiplier = 1000: matches - so same units so don't process
+        ''' Remove some symbols from symbol map:
+                Remove units like km, ms which are si prefix + base symbol
+                Check prefix = k, conversion_multiplier = 1000: matches - so same units so don't process '''
         for symbol in list(self.symbol_map.keys()):
-            if self.is_qudt_unit_with_si_prefix(self.symbol_map[symbol]):  # km, ms, etc
+            if self.is_qudt_unit_with_si_prefix(self.symbol_map[symbol][0][1]):  # km, ms, etc
                 del self.symbol_map[symbol]
 
         for label in list(self.label_map.keys()):
