@@ -96,10 +96,10 @@ class SymbolMap:
         qu_str_uri = qu.uri.strip()
 
         # label map
-        if hasattr(qu, 'label') and qu.label not in self.label_map:
-            # TODO: qu.label.lower() ??
+        llabel = qu.label.lower()
+        if hasattr(qu, 'label') and llabel not in self.label_map:
             # TODO: check if there are cases where it already exists in map
-            self.label_map[qu.label] = qu
+            self.label_map[llabel] = qu
         # check if user supplied additional labels
         if qu_str_uri in self.lbl_ex:
             for ex_label in self.lbl_ex[qu_str_uri]:
