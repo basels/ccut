@@ -53,6 +53,16 @@ class UnitVisitor(PTNodeVisitor):
             return children[0]
 
     def visit_simple_unit(self, node, children):
+        exponent_multiplier = None
+        if children.symbol[0][:2] == 'sq' and len(children.symbol[0]) > 2:
+            # handle sq* (i.e. sqm, sqkm, sqft, sqmi)
+            children.symbol[0] = children.symbol[0][2:]
+            exponent_multiplier = 2
+        elif children.symbol[0][:2] == 'cu' and len(children.symbol[0]) > 3:
+            # handle cu* (i.e. cuyd, cuft)
+            children.symbol[0] = children.symbol[0][2:]
+            exponent_multiplier = 3
+
         try:
             multiplier = children.multiplier[0]
         except:
@@ -62,6 +72,12 @@ class UnitVisitor(PTNodeVisitor):
             exponent = children.exponent[0]
         except:
             exponent = None
+        # adjust exponent
+        if exponent_multiplier:
+            if exponent:
+                exponent = str(int(exponent) * exponent_multiplier)
+            else:
+                exponent = str(exponent_multiplier)
 
         try:
             comment = children.comment[0]
