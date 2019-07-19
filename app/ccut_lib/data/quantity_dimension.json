@@ -214,7 +214,7 @@
     "ThermalConductivity" : "",
     "ThermalDiffusivity" : "",
     "ThermalEfficiency" : "",
-    "ThermalEnergy" : "",
+    "ThermalEnergy" : "M L2 T-2",
     "ThermalEnergyLength" : "",
     "ThermalInsulance" : "",
     "ThermalResistance" : "",

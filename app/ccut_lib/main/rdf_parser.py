@@ -36,7 +36,8 @@ class RDFParser:
                 qu.set_symbol(str(symbol))
             for abbr in self.g.objects(s, self.QUDT.abbreviation):
                 qu.set_abbr(str(abbr))
-            # TODO: there is more than 1 quantity_kind!
+            ''' TODO: there is more than 1 quantity_kind
+                i.e.: unit:Kilocalorie has qudt:quantityKind { quantity:EnergyAndWork, quantity:ThermalEnergy} '''
             for quantity_kind in self.g.objects(s, self.QUDT.quantityKind):
                 qu.set_quantity_kind(quantity_kind)
             for conversion_multiplier in self.g.objects(s, self.QUDT.conversionMultiplier):
