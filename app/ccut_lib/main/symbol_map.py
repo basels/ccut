@@ -54,21 +54,26 @@ class SymbolMap:
             SymbolMap.instance = SymbolMap()
         return SymbolMap.instance
 
+    def is_prefix_suffix_of_same_qudt_unit(self, qu: QudtUnit, pre: str, suf: str):
+        conversion_factor = SIPrefix.get_factor(pre)
+        if conversion_factor and suf in self.symbol_map:
+            # get head suffix qu
+            squ = self.symbol_map[suf][0][1]
+            conversion_ratio = qu.conversion_multiplier/squ.conversion_multiplier
+            if conversion_ratio == conversion_factor:
+                return True
+        return False
+
     def is_qudt_unit_with_si_prefix(self, qu: QudtUnit):
         ''' Return True for km, ms, etc, False for mX '''
         if not hasattr(qu, INDEX_NAME_CONVERSION_MULTIPLIER) or not hasattr(qu, 'symbol'):
             return False
-
         prefix, suffix = qu.symbol[0], qu.symbol[1:]
-        conversion_factor = SIPrefix.get_factor(prefix)
-        if qu.conversion_multiplier == conversion_factor and suffix in self.symbol_map:
+        if self.is_prefix_suffix_of_same_qudt_unit(qu, prefix, suffix):
             return True
-
         prefix, suffix = qu.symbol[:2], qu.symbol[2:]
-        conversion_factor = SIPrefix.get_factor(prefix)
-        if qu.conversion_multiplier == conversion_factor and suffix in self.symbol_map:
+        if self.is_prefix_suffix_of_same_qudt_unit(qu, prefix, suffix):
             return True
-
         return False
 
     def init_list_of_predfined_priorities(self):
@@ -185,9 +190,3 @@ class SymbolMap:
         for label in list(self.label_map.keys()):
             if self.is_qudt_unit_with_si_prefix(self.label_map[label]):
                 del self.label_map[label]
-
-        # Custom cases
-        if 'kg' in self.symbol_map:
-            del self.symbol_map['kg']
-        if 'kilogram' in self.label_map:
-            del self.label_map['kilogram']
