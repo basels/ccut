@@ -94,6 +94,8 @@ class SymbolMap:
         if symbol in self.udp:
             if uri in self.udp[symbol]:
                 return self.udp[symbol][uri]
+        # TODO: might need to increment if not defined in KB
+        #       but an instance already exists on same symbol
         return 1
 
     def update_symbol_and_labels_maps(self, qu):
@@ -136,18 +138,17 @@ class SymbolMap:
     def add_user_defined_instances(self):
         # check if user provided additional instances (non QUDT)
         for uri, unit_attrs in self.udu.items():
-            if 'symbol' in unit_attrs:
-                new_symbol = unit_attrs['symbol']
-                if new_symbol not in self.symbol_map:
-                    n_qu = QudtUnit()
-                    n_qu.set_uri(uri)
-                    n_qu.set_symbol(new_symbol)
-                    n_qu.set_label(unit_attrs['label'])
-                    n_qu.set_abbr(unit_attrs['abbr'])
-                    n_qu.set_quantity_kind(unit_attrs['quantityKind'])
-                    n_qu.set_conversion_multiplier(float(unit_attrs['conversion_multiplier']))
-                    n_qu.set_conversion_offset(float(unit_attrs['conversion_offset']))
-                    self.update_symbol_and_labels_maps(n_qu)
+            if 'symbol' in unit_attrs and \
+                'conversion_multiplier' in unit_attrs:
+                n_qu = QudtUnit()
+                n_qu.set_uri(uri)
+                n_qu.set_symbol(unit_attrs['symbol'])
+                n_qu.set_label(unit_attrs['label'])
+                n_qu.set_abbr(unit_attrs['abbr'])
+                n_qu.set_quantity_kind(unit_attrs['quantityKind'])
+                n_qu.set_conversion_multiplier(float(unit_attrs['conversion_multiplier']))
+                n_qu.set_conversion_offset(float(unit_attrs['conversion_offset']))
+                self.update_symbol_and_labels_maps(n_qu)
 
     def construct_map(self):
         ''' Special classes to handle
