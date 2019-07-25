@@ -3,7 +3,15 @@
         "conversion_offset": 0,
         "conversion_multiplier": 0.1589873
     },
-    "http://example.org/currency#USD": {
+    "https://w3id.org/mint/ccut#Stone": {
+        "symbol": "st",
+        "label": "stone",
+        "abbr": "st",
+        "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Mass",
+        "conversion_offset": 0,
+        "conversion_multiplier": 6.35029
+    },
+    "https://w3id.org/mint/ccut#USD": {
         "symbol": "USD",
         "label": "USD",
         "abbr": "USD",
@@ -11,7 +19,7 @@
         "conversion_offset": 0,
         "conversion_multiplier": 1
     },
-    "http://example.org/currency#SSP": {
+    "https://w3id.org/mint/ccut#SSP": {
         "symbol": "SSP",
         "label": "SSP",
         "abbr": "SSP",

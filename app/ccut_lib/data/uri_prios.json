@@ -1,8 +1,13 @@
 {
     "namespaces": {
-        "q": "http://data.nasa.gov/qudt/owl/unit#"
+        "q": "http://data.nasa.gov/qudt/owl/unit#",
+        "m": "https://w3id.org/mint/ccut#"
     },
     "instances": {
+        "st": {
+            "m:Stone": 1,
+            "q:Stere": 2
+        },
         "yr": {
             "q:Year365Day": 1,
             "q:YearSidereal": 12
