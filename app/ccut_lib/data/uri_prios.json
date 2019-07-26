@@ -41,8 +41,8 @@
             "q:Lambert": 2
         },
         "G": {
-            "q:Gauss": 1,
-            "q:Gravity": 2
+            "q:Gravity": 1,
+            "q:Gauss": 2
         },
         "fm": {
             "q:Femtometer": 1,
@@ -61,8 +61,8 @@
             "q:TonLong": 2
         },
         "rad": {
-            "q:Radian": 1,
-            "q:Rad": 2
+            "q:Rad": 1,
+            "q:Radian": 2
         },
         "Gi": {
             "q:Gilbert": 1,
