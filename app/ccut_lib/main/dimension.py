@@ -86,6 +86,7 @@ class DimensionVector:
         dimensionVector.append(Dimension('J', None, 0))
         dimensionVector.append(Dimension('D', None, 0))
         dimensionVector.append(Dimension('C', None, 0))
+        dimensionVector.append(Dimension('B', None, 0))
 
         return dimensionVector
 
