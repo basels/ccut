@@ -18,6 +18,13 @@ INDEX_NAME_CONVERSION_OFFSET = 'conversion_offset'
 INDEX_NAME_PREFIX_CONVERSION_MULTIPLIER = 'prefix_conversion_multiplier'
 INDEX_NAME_PREFIX_CONVERSION_OFFSET = 'prefix_conversion_offset'
 
+def get_full_ns_by_prefix(ns_dict, ns_candidate):
+    ns_cand_split_lst = ns_candidate.split(':')
+    ns_short = ns_cand_split_lst[0]
+    if ns_short in ns_dict:
+        return ns_dict[ns_short] + ''.join(ns_cand_split_lst[1:])
+    return ns_candidate
+
 # Use as singleton class
 class SymbolMap:
 
@@ -31,14 +38,12 @@ class SymbolMap:
 
         # load QUDT files
         for ontof in Config.DATA_QUDT_V1_ONTO_FILES:
-            self.rp = RDFParser(Config.DATA_DIR, ontof)
-        # user-defined-units
-        with open(f'{Config.DATA_DIR}/{Config.DATA_USER_DEFINED_UNITS_FILE}', 'r') as read_file:
-            self.udu = load(read_file)
+            self.rp = RDFParser(Config.DATA_DIR, ontof)        
         # label extensions for existing instances
         with open(f'{Config.DATA_DIR}/{Config.DATA_LABELS_EXTENSION_MAP_FILE}', 'r') as read_file:
             self.lbl_ex = load(read_file)
 
+        self.init_list_of_predefined_units()
         self.init_list_of_predfined_priorities()
         self.construct_map()
         self.add_user_defined_instances()
@@ -79,16 +84,22 @@ class SymbolMap:
     def init_list_of_predfined_priorities(self):
         # pre-defined priorities
         with open(f'{Config.DATA_DIR}/{Config.DATA_PRE_DEFINED_PRIO_FILE}', 'r') as read_file:
-            glob_udp = load(read_file)
+            glob_dict = load(read_file)
         self.udp = dict()
-        for symb_key, symb_opts in glob_udp['instances'].items():
+        for symb_key, symb_opts in glob_dict['instances'].items():
             self.udp[symb_key] = dict()
             for inst_short_uri, inst_prio in symb_opts.items():
-                inst_long_uri = inst_short_uri
-                ns_prfx_candidate = inst_short_uri.split(':')[0]
-                if ns_prfx_candidate in glob_udp['namespaces']:
-                    inst_long_uri = glob_udp['namespaces'][ns_prfx_candidate] + ''.join(inst_short_uri.split(':')[1:])
+                inst_long_uri = get_full_ns_by_prefix(glob_dict['namespaces'], inst_short_uri)
                 self.udp[symb_key][inst_long_uri] = inst_prio
+
+    def init_list_of_predefined_units(self):
+        # pre-defined units
+        with open(f'{Config.DATA_DIR}/{Config.DATA_USER_DEFINED_UNITS_FILE}', 'r') as read_file:
+            glob_dict = load(read_file)
+        self.udu = dict()
+        for inst_key, inst_values in glob_dict['instances'].items():
+            inst_full_key = get_full_ns_by_prefix(glob_dict['namespaces'], inst_key)
+            self.udu[inst_full_key] = inst_values
 
     def get_uri_prio(self, symbol, uri):
         if symbol in self.udp:
@@ -160,12 +171,15 @@ class SymbolMap:
             qu_str_uri = qu.uri.strip()
             
             # check if user has provided additional attributes for this qu
-            if qu_str_uri in self.udu and qu.symbol not in self.symbol_map:
+            if qu_str_uri in self.udu:
                 ud_qu = self.udu[qu_str_uri]
-                for key, val in ud_qu.items():
-                    if not hasattr(qu, key) and key in ud_qu:
-                        setattr(qu, key, ud_qu[key])
-                del self.udu[qu_str_uri]
+                if 'symbol' in ud_qu:
+                    qu.symbol = ud_qu['symbol']
+                if qu.symbol not in self.symbol_map:
+                    for key, val in ud_qu.items():
+                        if not hasattr(qu, key) and key in ud_qu:
+                            setattr(qu, key, ud_qu[key])
+                    del self.udu[qu_str_uri]
 
             # if qu doesn't have conversion multiplier, skip
             if not hasattr(qu, INDEX_NAME_CONVERSION_MULTIPLIER):

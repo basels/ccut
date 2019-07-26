@@ -1,31 +1,82 @@
 {
-    "http://data.nasa.gov/qudt/owl/unit#Barrel": {
-        "conversion_offset": 0,
-        "conversion_multiplier": 0.1589873
+    "namespaces": {
+        "q": "http://data.nasa.gov/qudt/owl/unit#",
+        "m": "https://w3id.org/mint/ccut#"
     },
-    "https://w3id.org/mint/ccut#Stone": {
-        "symbol": "st",
-        "label": "stone",
-        "abbr": "st",
-        "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Mass",
-        "conversion_offset": 0,
-        "conversion_multiplier": 6.35029
-    },
-    "https://w3id.org/mint/ccut#USD": {
-        "symbol": "USD",
-        "label": "USD",
-        "abbr": "USD",
-        "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Dimensionless",
-        "conversion_offset": 0,
-        "conversion_multiplier": 1
-    },
-    "https://w3id.org/mint/ccut#SSP": {
-        "symbol": "SSP",
-        "label": "SSP",
-        "abbr": "SSP",
-        "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Dimensionless",
-        "conversion_offset": 0,
-        "conversion_multiplier": 0.01470588235
+    "instances": {
+        "q:Barrel": {
+            "conversion_offset": 0,
+            "conversion_multiplier": 0.1589873
+        },
+        "q:HundredWeightLong": {
+            "symbol": "lcwt",
+            "conversion_offset": 0,
+            "conversion_multiplier": 50.80234544
+        },
+        "m:Stone": {
+            "symbol": "st",
+            "label": "stone",
+            "abbr": "st",
+            "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Mass",
+            "conversion_offset": 0,
+            "conversion_multiplier": 6.35029e+8
+        },
+        "m:SolarRadius": {
+            "symbol": "R☉",
+            "label": "solar radius",
+            "abbr": "srad",
+            "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Length",
+            "conversion_offset": 0,
+            "conversion_multiplier": 6.957e+8
+        },
+        "m:Parsec": {
+            "symbol": "pc",
+            "label": "parsec",
+            "abbr": "pc",
+            "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Length",
+            "conversion_offset": 0,
+            "conversion_multiplier": 3.086e+16
+        },
+        "m:TonneForce": {
+            "symbol": "tf",
+            "label": "tonne force",
+            "abbr": "tf",
+            "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Force",
+            "conversion_offset": 0,
+            "conversion_multiplier": 9806.65
+        },
+        "m:GramForce": {
+            "symbol": "gf",
+            "label": "gram force",
+            "abbr": "gf",
+            "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Force",
+            "conversion_offset": 0,
+            "conversion_multiplier": 0.00980665
+        },
+        "m:Month": {
+            "symbol": "mon",
+            "label": "month",
+            "abbr": "mon",
+            "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Time",
+            "conversion_offset": 0,
+            "conversion_multiplier": 2629746
+        },
+        "m:USD": {
+            "symbol": "USD",
+            "label": "USD",
+            "abbr": "USD",
+            "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Dimensionless",
+            "conversion_offset": 0,
+            "conversion_multiplier": 1
+        },
+        "m:SSP": {
+            "symbol": "SSP",
+            "label": "SSP",
+            "abbr": "SSP",
+            "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Dimensionless",
+            "conversion_offset": 0,
+            "conversion_multiplier": 0.01470588235
+        }
     }
 }
 
