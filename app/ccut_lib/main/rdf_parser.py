@@ -27,7 +27,7 @@ class RDFParser:
                 continue
 
             qu = QudtUnit()
-            qu.set_uri(s)
+            qu.set_uri(s.strip())
 
             # TODO: add check if there are multiple defintions
             for label in self.g.objects(s, RDFS.label):

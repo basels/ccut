@@ -32,6 +32,7 @@ class SymbolMap:
 
     def __init__(self):
 
+        print('\033[35m' + '-'*20 + ' Initializing CCUT SymbolMap instance ' + '-'*20 + '\033[0m')
         self.symbol_map = dict()
         self.label_map = dict()
         self.si_prefix_map = dict()
@@ -47,11 +48,13 @@ class SymbolMap:
         self.init_list_of_predfined_priorities()
         self.construct_map()
         self.add_user_defined_instances()
+        self.print_duplications_on_symbols()
 
         del self.rp
         del self.udu
         del self.lbl_ex
         del self.udp
+        print('\033[35m' + '-'*15 + ' Finished initializing CCUT SymbolMap instance ' + '-'*16 + '\033[0m')
 
     @staticmethod
     def get_instance() -> 'SymbolMap':
@@ -105,29 +108,38 @@ class SymbolMap:
         if symbol in self.udp:
             if uri in self.udp[symbol]:
                 return self.udp[symbol][uri]
-        # TODO: might need to increment if not defined in KB
-        #       but an instance already exists on same symbol
+
+        if symbol in self.symbol_map:
+            return self.symbol_map[symbol][-1][0] + 1
+
         return 1
 
-    def update_symbol_and_labels_maps(self, qu):
-        # clean uri string
-        qu_str_uri = qu.uri.strip()
+    def print_duplications_on_symbols(self):
+        for symb_key, symb_list_of_prio_inst_tup in self.symbol_map.items():
+            num_of_instances_in_symbol = len(symb_list_of_prio_inst_tup)
+            if num_of_instances_in_symbol > 1:
+                print(f'\033[93m "{symb_key}" has {num_of_instances_in_symbol} instances\033[0m')
+                for prio, inst in symb_list_of_prio_inst_tup:
+                    print(f'   [{prio}] {inst.uri}')
 
+    def update_symbol_and_labels_maps(self, qu):
         # label map
-        llabel = qu.label.lower()
-        if hasattr(qu, 'label') and llabel not in self.label_map:
-            # TODO: check if there are cases where it already exists in map
-            self.label_map[llabel] = qu
+        if hasattr(qu, 'label'):
+            llabel = qu.label.lower()
+            if llabel not in self.label_map:
+                self.label_map[llabel] = qu
         # check if user supplied additional labels
-        if qu_str_uri in self.lbl_ex:
-            for ex_label in self.lbl_ex[qu_str_uri]:
+        if qu.uri in self.lbl_ex:
+            for ex_label in self.lbl_ex[qu.uri]:
                 if ex_label not in self.label_map:
                     self.label_map[ex_label] = qu
-            del self.lbl_ex[qu_str_uri]
+                elif qu.uri != self.label_map[ex_label].uri:
+                    print(f'\033[91m "{ex_label} | {qu.uri}" has already been defined ({self.label_map[ex_label].uri})\033[0m')
+            del self.lbl_ex[qu.uri]
 
         # symbol map
         symb = qu.symbol
-        prio = self.get_uri_prio(symb, qu_str_uri)
+        prio = self.get_uri_prio(symb, qu.uri)
         if symb not in self.symbol_map:
             # create the first instance in the list
             self.symbol_map[symb] = [(prio, qu)]
@@ -137,8 +149,8 @@ class SymbolMap:
         insrt_qidx = 0
         for qinst in curr_list:
             existing_prio = qinst[0]
-            existing_uri = qinst[1].uri.strip()
-            if qu_str_uri == existing_uri:
+            existing_uri = qinst[1].uri
+            if qu.uri == existing_uri:
                 return
             if existing_prio < prio:
                 # this index is to determine where we push the new item
@@ -150,15 +162,15 @@ class SymbolMap:
         # check if user provided additional instances (non QUDT)
         for uri, unit_attrs in self.udu.items():
             if 'symbol' in unit_attrs and \
-                'conversion_multiplier' in unit_attrs:
+                INDEX_NAME_CONVERSION_MULTIPLIER in unit_attrs:
                 n_qu = QudtUnit()
                 n_qu.set_uri(uri)
                 n_qu.set_symbol(unit_attrs['symbol'])
                 n_qu.set_label(unit_attrs['label'])
                 n_qu.set_abbr(unit_attrs['abbr'])
-                n_qu.set_quantity_kind(unit_attrs['quantityKind'])
-                n_qu.set_conversion_multiplier(float(unit_attrs['conversion_multiplier']))
-                n_qu.set_conversion_offset(float(unit_attrs['conversion_offset']))
+                n_qu.set_quantity_kind(unit_attrs[INDEX_NAME_QUANTITYKIND])
+                n_qu.set_conversion_multiplier(float(unit_attrs[INDEX_NAME_CONVERSION_MULTIPLIER]))
+                n_qu.set_conversion_offset(float(unit_attrs[INDEX_NAME_CONVERSION_OFFSET]))
                 self.update_symbol_and_labels_maps(n_qu)
 
     def construct_map(self):
@@ -167,19 +179,16 @@ class SymbolMap:
                 qudt:DecimalPrefixUnit '''
 
         for qu in self.rp.get_details():
-            # clean uri string of the current qu (QudtUnit) instance
-            qu_str_uri = qu.uri.strip()
-            
             # check if user has provided additional attributes for this qu
-            if qu_str_uri in self.udu:
-                ud_qu = self.udu[qu_str_uri]
+            if qu.uri in self.udu:
+                ud_qu = self.udu[qu.uri]
                 if 'symbol' in ud_qu:
                     qu.symbol = ud_qu['symbol']
                 if qu.symbol not in self.symbol_map:
                     for key, val in ud_qu.items():
                         if not hasattr(qu, key) and key in ud_qu:
                             setattr(qu, key, ud_qu[key])
-                    del self.udu[qu_str_uri]
+                    del self.udu[qu.uri]
 
             # if qu doesn't have conversion multiplier, skip
             if not hasattr(qu, INDEX_NAME_CONVERSION_MULTIPLIER):
