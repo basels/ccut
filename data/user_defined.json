@@ -76,6 +76,14 @@
             "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Dimensionless",
             "conversion_offset": 0,
             "conversion_multiplier": 0.01470588235
+        },
+        "m:#ETB": {
+            "symbol": "ETB",
+            "label": "ETB",
+            "abbr": "ETB",
+            "quantityKind": "http://data.nasa.gov/qudt/owl/quantity#Dimensionless",
+            "conversion_offset": 0,
+            "conversion_multiplier": 0.0345103
         }
     }
 }
