@@ -1,5 +1,0 @@
-flask-restful
-flask_wtf
-flask
-arpeggio
-rdflib

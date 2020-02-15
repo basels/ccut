@@ -1,66 +1,32 @@
 ## Canonicalization Compound Unit Representation & Transformation
+- Identifying individual units, their exponents and multipliers
+- Representing units in a canonical format
+- Mapping units to Ontology
+- Finding the dimensions of each atomic unit
+- Converting from one unit to another
 
 This is the implementation accompanying the MWS 2019 paper, [_Parsing, Representing and Transforming Units of Measure_](https://www.momacs.pitt.edu/wp-content/uploads/2019/05/Parsing-Representing-and-Transforming-Units-of-Measure.pdf).
 
 ### How to run:
-#### Build image
+Here's how you can use this library:
+
+#### > Python API:
 ```
-docker build -t ccut_img .
-```
-#### Run image (flask server)
-```
-docker run -d -p 5000:5000 ccut_img run -h 0.0.0.0 -p 5000
+from ... import CanonicalCompoundUnitTransformation
+s = CanonicalCompoundUnitTransformation.get_instance()
+val_out, error = s.canonical_transform(unit_in_string, unit_out_string, val_in)
+
+# Error key: 0: "OK"
+#            1: "TRANSFORMATION_IS_NOT_SYMMETRIC"
+#            2: "DIMENSION_MISMATCH"
+#            3: "TRANSFORMATION_UNKNOWN"
+#            4: "UNSUPPORTED_FLOW"
+
+# Example: canonical_transform(x, "km s^2", "hr^2 microft"): return x*253.151, 0
 ```
 
-### Examples:
-#### Get Unit Representation
+### Running Tests:
+We use the pytest package as the base framework for our tests:
 ```
-curl -X GET "http://0.0.0.0:5000/get_canonical_json?u=km%20s^2"
-```
-Output format is ```JSON: canonical_json```
-```
-{
-    ccut:hasDimension: "L T2",
-    ccut:hasPart: [
-        {
-            ccut:hasDimension: "L",
-            ccut:prefix: "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Kilo",
-            ccut:prefixConversionMultiplier: 1000.0,
-            ccut:prefixConversionOffset: 0.0,
-            qudtp:conversionMultiplier: 1.0,
-            qudtp:conversionOffset: 0.0,
-            qudtp:quantityKind: "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Meter",
-            qudtp:symbol: "km"
-        },
-        {
-            ccut:exponent: "2",
-            ccut:hasDimension: "T",
-            qudtp:conversionMultiplier: 1.0,
-            qudtp:conversionOffset: 0.0,
-            qudtp:quantityKind: "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#SecondTime",
-            qudtp:symbol: "s"
-        }
-    ],
-    qudtp:abbreviation: "km s2"
-}
-```
-#### Get Units Transformation
-```
-curl -X GET "http://0.0.0.0:5000/trans_form?in_unit=km&out_unit=ft&in_val=0.3049"
-```
-Output format is ```JSON :canonical_json_in, canonical_json_out, out_val, error_enum, error_string```
-```
-[ {
-    ccut:hasPart: [ ... ],
-    ccut:hasDimension: "L",
-    qudtp:abbreviation: "km"
-  },
-  {
-    ccut:hasPart: [ ... ],
-    qudtp:abbreviation: "ft",
-    ...
-  },
-  6561.679790026246,
-  0,
-  "OK" ]
+pytest -v
 ```
