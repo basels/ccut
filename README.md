@@ -1,66 +1,82 @@
-## Canonicalization Compound Unit Representation & Transformation
+## Canonicalization Compound Unit Representation & Transformation (CCUT)
+- Identifying individual units, their exponents and multipliers
+- Representing units in a canonical format
+- Mapping units to Ontology
+- Finding the dimensions of each atomic unit
+- Converting from one unit to another
 
 This is the implementation accompanying the MWS 2019 paper, [_Parsing, Representing and Transforming Units of Measure_](https://www.momacs.pitt.edu/wp-content/uploads/2019/05/Parsing-Representing-and-Transforming-Units-of-Measure.pdf).
 
 ### How to run:
-#### Build image
+Here's how you can use this library. Import the module and then create an instance:
+
 ```
-docker build -t ccut_img .
-```
-#### Run image (flask server)
-```
-docker run -d -p 5000:5000 ccut_img run -h 0.0.0.0 -p 5000
+from ccut import CCUT
+
+myccut_inst = CCUT()
 ```
 
-### Examples:
-#### Get Unit Representation
+#### > CCU Representation:
+Run `ccu_repr` with a single argument (string of atomic/compound unit).
+
+For example, running:
 ```
-curl -X GET "http://0.0.0.0:5000/get_canonical_json?u=km%20s^2"
+myccut_inst.ccu_repr("kg/s^2")
 ```
-Output format is ```JSON: canonical_json```
+Will return:
 ```
 {
-    ccut:hasDimension: "L T2",
-    ccut:hasPart: [
+    'qudtp:abbreviation': 'kg s-2',
+    'ccut:hasPart': [
         {
-            ccut:hasDimension: "L",
-            ccut:prefix: "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Kilo",
-            ccut:prefixConversionMultiplier: 1000.0,
-            ccut:prefixConversionOffset: 0.0,
-            qudtp:conversionMultiplier: 1.0,
-            qudtp:conversionOffset: 0.0,
-            qudtp:quantityKind: "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Meter",
-            qudtp:symbol: "km"
+            'qudtp:symbol': 'kg',
+            'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Gram',
+            'ccut:prefix': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Kilo', 'ccut:prefixConversionMultiplier': 1000.0,
+            'ccut:prefixConversionOffset': 0.0,
+            'ccut:hasDimension': 'M',
+            'qudtp:conversionMultiplier': 0.001,
+            'qudtp:conversionOffset': 0.0
         },
         {
-            ccut:exponent: "2",
-            ccut:hasDimension: "T",
-            qudtp:conversionMultiplier: 1.0,
-            qudtp:conversionOffset: 0.0,
-            qudtp:quantityKind: "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#SecondTime",
-            qudtp:symbol: "s"
+            'qudtp:symbol': 's',
+            'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#SecondTime',
+            'ccut:hasDimension': 'T',
+            'qudtp:conversionMultiplier': 1.0,
+            'qudtp:conversionOffset': 0.0,
+            'ccut:exponent': '-2'
         }
     ],
-    qudtp:abbreviation: "km s2"
+    'ccut:hasDimension': 'M T-2'
 }
 ```
-#### Get Units Transformation
+
+#### > CCU Transformation (Conversion):
+Run `canonical_transform` with three arguments (string of source unit, string of destination unit, value to transform).
+
+For example, running:
 ```
-curl -X GET "http://0.0.0.0:5000/trans_form?in_unit=km&out_unit=ft&in_val=0.3049"
+myccut_inst.canonical_transform("m/s", "mi/hr", 2.7)
 ```
-Output format is ```JSON :canonical_json_in, canonical_json_out, out_val, error_enum, error_string```
+Will return:
 ```
-[ {
-    ccut:hasPart: [ ... ],
-    ccut:hasDimension: "L",
-    qudtp:abbreviation: "km"
-  },
-  {
-    ccut:hasPart: [ ... ],
-    qudtp:abbreviation: "ft",
-    ...
-  },
-  6561.679790026246,
-  0,
-  "OK" ]
+(6.039727988546887, 0)
+```
+The first value in the tuple is the value after conversion, the second is the return code, where:
+```
+# Error key: 0: "OK"
+#            1: "TRANSFORMATION_IS_NOT_SYMMETRIC"
+#            2: "DIMENSION_MISMATCH"
+#            3: "TRANSFORMATION_UNKNOWN"
+#            4: "UNSUPPORTED_FLOW"
+```
+
+### Citing CCUT
+If you would like to cite the this tool in a paper or presentation, the following is recommended (BibTeX entry):
+```
+@article{shbita2019parsing,
+  title={Parsing, Representing and Transforming Units of Measure},
+  author={Shbita, Basel and Rajendran, Arunkumar and Pujara, Jay and Knoblock, Craig A}
+  journal={Modeling the World’s Systems},
+  year={2019},
+}
 ```
