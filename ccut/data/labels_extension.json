@@ -1,3 +1,4 @@
 {
-    "http://data.nasa.gov/qudt/owl/unit#MetricTon": [ "tonne", "tonnes" ]
+    "http://data.nasa.gov/qudt/owl/unit#MetricTon": [ "tonne", "tonnes" ],
+    "http://data.nasa.gov/qudt/owl/unit#MinuteTime": [ "minute", "minutes" ]
 }
