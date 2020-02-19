@@ -17,9 +17,8 @@ cc = ccut()
 
 #### CCU Representation:
 ##### `get_top_ccu`:
-This method is used to get the top (single) CCU representation of a given string.<br />
+This method is used to get the top (single) CCU representation (dictionary) for a given string.<br />
 Run with a single argument (string of atomic/compound unit).<br />
-
 For example, running:
 ```
 cc.get_top_ccu("kg/s^2")
@@ -52,7 +51,7 @@ Will return:
 ```
 
 ##### `get_all_ccu`:
-This method is used to get all the (multiple) CCU representation of a given string.<br />
+This method is used to get all the (multiple) CCU representations (ordered list of dictionaries) for a given string.<br />
 Run with a single argument (string of atomic/compound unit).<br />
 For example, running:
 ```
@@ -68,9 +67,9 @@ TBD
 This method is used to perfrom compound unit conversion given the CCU representations.<br />
 Run with three arguments (ccu representation of the source unit, ccu representation of the destination unit, value to transform).<br />
 This method will return 3 values:
-    1. the value after conversion
-    2. the return status (see below)
-    3. the return status in readable format (string)
+- the value after conversion
+- the return status (see below)
+- the return status in readable format (string)
 Where:
 ```
 # Status key: 0: "OK"
@@ -94,11 +93,11 @@ Will return:
 This method is used to perfrom compound unit conversion given the strings of the source and destination units.<br />
 Run with three arguments (string of source unit, string of destination unit, value to transform).<br />
 This method will return 5 values:
-    1. the value after conversion
-    2. the return status
-    3. the return status in readable format (string)
-    4. CCU representaiton of the source string
-    5. CCU representaiton of the destination string
+- the value after conversion
+- the return status
+- the return status in readable format (string)
+- CCU representaiton of the source string
+- CCU representaiton of the destination string
 For example, running:
 ```
 cc.convert_str2str("m/s", "mi/hr", 2.7)
