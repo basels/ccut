@@ -114,10 +114,7 @@ class CanonicalCompoundUnitTransformation:
                     break
             atomic_idx_src_orig += 1
 
-    def canonical_transform(self, unit_src_string, unit_dst_string, val_in):
-        # get canonical representation
-        ccu_src = self.get_canonical_compound_unit_dict_from_string(unit_src_string)
-        ccu_dst = self.get_canonical_compound_unit_dict_from_string(unit_dst_string)
+    def canonical_transform(self, ccu_src, ccu_dst, val_in):
 
         # check if overall-dimensions match
         if ccu_src[f'{CCUT_NAMESPACE}:hasDimension'] != ccu_dst[f'{CCUT_NAMESPACE}:hasDimension']:
@@ -210,15 +207,3 @@ class CanonicalCompoundUnitTransformation:
             return 0.0, RET_VAL_TRANS_NOT_SYMMETRIC # ERROR
 
         return uout, feedback_str
-
-    def ccu_repr(self, unit_string):
-        parser = UnitParser().get_parser()
-        parsed_unit = visit_parse_tree(parser.parse(unit_string), UnitVisitor(debug=False))
-        ccu = CanonicalCompoundUnit(parsed_unit).get_unit_object()
-        return ccu
-
-    def ccu2ccu_transform(self, unit_src_string, unit_dst_string, val_in):
-        ccu_src = self.get_canonical_compound_unit_dict_from_string(unit_src_string)
-        ccu_dst = self.get_canonical_compound_unit_dict_from_string(unit_dst_string)
-        num_out, error = self.canonical_transform(unit_src_string, unit_dst_string, val_in)
-        return ccu_src, ccu_dst, num_out, error, RET_STR_MAP[error]

@@ -1,5 +1,5 @@
-from main.unit_match import UnitMatch
-from main.symbol_map import SymbolMap
+from ..main.unit_match import UnitMatch
+from ..main.symbol_map import SymbolMap
 
 
 def test():

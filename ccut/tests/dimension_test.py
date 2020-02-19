@@ -1,4 +1,4 @@
-from main.dimension import DimensionVector
+from ..main.dimension import DimensionVector
 
 def test():
     assert DimensionVector().set_dimensions("M1.1").raise_to_power(2).get_abbr() == 'M2.2'
@@ -7,10 +7,10 @@ def test():
     assert DimensionVector().set_dimensions("M L T").raise_to_power(2).get_abbr() == 'M2 L2 T2'
 
     assert str((DimensionVector().set_dimensions("M L2 D2") + DimensionVector().set_dimensions(
-        "L3 Te-1 D-3")).get_dimension_vector()) == "[M 1.0, L 5.0, T 0, I 0, Te -1.0, N 0, J 0, D -1.0, C 0]"
+        "L3 Te-1 D-3")).get_dimension_vector()) == "[M 1.0, L 5.0, T 0, I 0, Te -1.0, N 0, J 0, D -1.0, C 0, B 0]"
 
     assert str(DimensionVector().set_dimensions(
-        "M L2 Te-1").get_dimension_vector()) == "[M 1.0, L 2.0, T 0, I 0, Te -1.0, N 0, J 0, D 0, C 0]"
+        "M L2 Te-1").get_dimension_vector()) == "[M 1.0, L 2.0, T 0, I 0, Te -1.0, N 0, J 0, D 0, C 0, B 0]"
 
     assert DimensionVector().set_dimensions("M").get_abbr() == "M"
     assert DimensionVector().set_dimensions("L2").get_abbr() == "L2"

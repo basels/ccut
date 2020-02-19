@@ -1,4 +1,4 @@
-from main.symbol_map import SymbolMap
+from ..main.symbol_map import SymbolMap
 
 def test():
     s = SymbolMap.get_instance()

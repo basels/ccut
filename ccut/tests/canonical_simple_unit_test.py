@@ -1,5 +1,5 @@
-from main.canonical_simple_unit import CanonicalSimpleUnit
-from main.unit import Unit
+from ..main.canonical_simple_unit import CanonicalSimpleUnit
+from ..main.unit import Unit
 
 def test():
     u = Unit('kg', None, None, None)

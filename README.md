@@ -7,21 +7,22 @@
 
 This is the implementation accompanying the MWS 2019 paper, [_Parsing, Representing and Transforming Units of Measure_](https://www.momacs.pitt.edu/wp-content/uploads/2019/05/Parsing-Representing-and-Transforming-Units-of-Measure.pdf).
 
+
 ### How to run:
 Here's how you can use this library. Import the module and then create an instance:
-
 ```
-from ccut import CCUT
-
-myccut_inst = CCUT()
+from ccut import ccut
+cc = ccut()
 ```
 
-#### > CCU Representation:
-Run `ccu_repr` with a single argument (string of atomic/compound unit).
+#### CCU Representation:
+##### `get_top_ccu`:
+This method is used to get the top (single) CCU representation of a given string.<br />
+Run with a single argument (string of atomic/compound unit).<br />
 
 For example, running:
 ```
-myccut_inst.ccu_repr("kg/s^2")
+cc.get_top_ccu("kg/s^2")
 ```
 Will return:
 ```
@@ -50,25 +51,111 @@ Will return:
 }
 ```
 
-#### > CCU Transformation (Conversion):
-Run `canonical_transform` with three arguments (string of source unit, string of destination unit, value to transform).
-
+##### `get_all_ccu`:
+This method is used to get all the (multiple) CCU representation of a given string.<br />
+Run with a single argument (string of atomic/compound unit).<br />
 For example, running:
 ```
-myccut_inst.canonical_transform("m/s", "mi/hr", 2.7)
+cc.get_all_ccu("oz")
 ```
 Will return:
 ```
-(6.039727988546887, 0)
+TBD
 ```
-The first value in the tuple is the value after conversion, the second is the return code, where:
+
+#### CCU Transformation (Conversion):
+##### `convert_ccu2ccu`:
+This method is used to perfrom compound unit conversion given the CCU representations.<br />
+Run with three arguments (ccu representation of the source unit, ccu representation of the destination unit, value to transform).<br />
+This method will return 3 values:
+    1. the value after conversion
+    2. the return status (see below)
+    3. the return status in readable format (string)
+Where:
 ```
-# Error key: 0: "OK"
-#            1: "TRANSFORMATION_IS_NOT_SYMMETRIC"
-#            2: "DIMENSION_MISMATCH"
-#            3: "TRANSFORMATION_UNKNOWN"
-#            4: "UNSUPPORTED_FLOW"
+# Status key: 0: "OK"
+#             1: "TRANSFORMATION_IS_NOT_SYMMETRIC"
+#             2: "DIMENSION_MISMATCH"
+#             3: "TRANSFORMATION_UNKNOWN"
+#             4: "UNSUPPORTED_FLOW"
 ```
+For example, running:
+```
+src_ccu = cc.get_top_ccu("m/s")
+dst_ccu = cc.get_top_ccu("mi/hr")
+cc.convert_str2str(src_ccu, dst_ccu, 2.7)
+```
+Will return:
+```
+(6.039727988546887, 0, 'OK')
+```
+
+##### `convert_str2str`:
+This method is used to perfrom compound unit conversion given the strings of the source and destination units.<br />
+Run with three arguments (string of source unit, string of destination unit, value to transform).<br />
+This method will return 5 values:
+    1. the value after conversion
+    2. the return status
+    3. the return status in readable format (string)
+    4. CCU representaiton of the source string
+    5. CCU representaiton of the destination string
+For example, running:
+```
+cc.convert_str2str("m/s", "mi/hr", 2.7)
+```
+Will return:
+```
+(
+    6.039727988546887,
+    0,
+    'OK',
+    {
+        'qudtp:abbreviation': 'm s-1',
+        'ccut:hasPart': [
+            {
+                'qudtp:symbol': 'm',
+                'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Meter',
+                'ccut:hasDimension': 'L',
+                'qudtp:conversionMultiplier': 1.0,
+                'qudtp:conversionOffset': 0.0,
+                '_metadata:total_dimension': 1.0
+            },
+            {
+                'qudtp:symbol': 's',
+                'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#SecondTime',
+                'ccut:hasDimension': 'T',
+                'qudtp:conversionMultiplier': 1.0,
+                'qudtp:conversionOffset': 0.0,
+                'ccut:exponent': '-1',
+                '_metadata:total_dimension': -1.0
+            }
+        ],
+        'ccut:hasDimension': 'L T-1'
+    },
+    {
+        'qudtp:abbreviation': 'mi hr-1',
+        'ccut:hasPart': [
+            {
+                'qudtp:symbol': 'mi',
+                'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#MileInternational',
+                'ccut:hasDimension': 'L',
+                'qudtp:conversionMultiplier': 1609.344,
+                'qudtp:conversionOffset': 0.0
+            },
+            {
+                'qudtp:symbol': 'hr',
+                'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Hour',
+                'ccut:hasDimension': 'T',
+                'qudtp:conversionMultiplier': 3600.0,
+                'qudtp:conversionOffset': 0.0,
+                'ccut:exponent': '-1'
+            }
+        ],
+        'ccut:hasDimension': 'L T-1'
+    }
+)
+```
+
 
 ### Citing CCUT
 If you would like to cite the this tool in a paper or presentation, the following is recommended (BibTeX entry):
