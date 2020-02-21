@@ -2,11 +2,8 @@
 The Main callable
 '''
 
-from .canonical_compound_unit import CanonicalCompoundUnit
 from .canonical_compound_unit_transformation import CanonicalCompoundUnitTransformation, RET_STR_MAP, RET_VAL_OK, \
     RET_VAL_TRANS_NOT_SYMMETRIC, RET_VAL_DIMENSION_MISMATCH, RET_VAL_TRANS_UNKNOWN, RET_VAL_UNSUPPORTED_FLOW
-from .unit_visitor import UnitVisitor
-from arpeggio import visit_parse_tree
 
 # Use as singleton class
 class CanonicalCompoundUnitTransformation_Main:

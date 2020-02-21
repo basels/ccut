@@ -33,14 +33,14 @@ class CanonicalCompoundUnit:
 
         if compoundUnit.numerator:
             for n in compoundUnit.numerator:
-                csu = CanonicalSimpleUnit(n).get_unit_object()
+                csu = CanonicalSimpleUnit(n).get_unit_object_list()[0] # TODO: this should be list of options
                 self.unit_obj[f'{CCUT_NAMESPACE}:hasPart'].append(csu)
                 dimensionVector += DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(
                     n.exponent or 1)
 
         if compoundUnit.denominator:
             for d in compoundUnit.denominator:
-                csu = CanonicalSimpleUnit(Unit.negate_exponent(d)).get_unit_object()
+                csu = CanonicalSimpleUnit(Unit.negate_exponent(d)).get_unit_object_list()[0] # TODO: this should be list of options
                 self.unit_obj[f'{CCUT_NAMESPACE}:hasPart'].append(csu)
                 # This is line is too complicated. Must be simplified
                 dimensionVector += DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(

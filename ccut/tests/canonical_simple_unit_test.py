@@ -3,7 +3,7 @@ from ..main.unit import Unit
 
 def test():
     u = Unit('kg', None, None, None)
-    assert CanonicalSimpleUnit(u).get_unit_object() == {'qudtp:symbol': 'kg',
+    assert CanonicalSimpleUnit(u).get_unit_object_list()[0] == {'qudtp:symbol': 'kg',
      'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Gram',
      'ccut:prefix': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Kilo',
      'ccut:hasDimension': 'M',
@@ -13,7 +13,7 @@ def test():
      'qudtp:conversionOffset': 0}
 
     u = Unit('X', None, None, None)
-    assert CanonicalSimpleUnit(u).get_unit_object() == {'qudtp:symbol': 'X',
+    assert CanonicalSimpleUnit(u).get_unit_object_list()[0] == {'qudtp:symbol': 'X',
      'qudtp:quantityKind': 'UNKNOWN TYPE',
      'ccut:hasDimension': 'UNKNOWN DIMENSION',
      'qudtp:conversionMultiplier': None,

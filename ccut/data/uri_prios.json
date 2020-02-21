@@ -72,6 +72,10 @@
             "q:LiquidOunceUS": 1,
             "q:OunceImperial": 2,
             "q:OunceTroy": 3
+        },
+        "D": {
+            "q:Debye": 1,
+            "q:Diopter": 2
         }
     }
 }

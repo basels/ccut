@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ccut",
-    version="0.0.1",
+    version="0.0.3",
     author="Basel Shbita",
     author_email="basel921@gmail.com",
     description="A package for identifying, parsing and transforming units of measure",

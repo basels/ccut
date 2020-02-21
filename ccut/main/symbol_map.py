@@ -58,11 +58,15 @@ class SymbolMap:
 
     @staticmethod
     def get_instance() -> 'SymbolMap':
+        ''' Get SymbolMap instance. '''
+
         if SymbolMap.instance is None:
             SymbolMap.instance = SymbolMap()
         return SymbolMap.instance
 
     def is_prefix_suffix_of_same_qudt_unit(self, qu: QudtUnit, pre: str, suf: str):
+        ''' Check if given unit can be broken down to prefix (SI) and suffix (Unit). '''
+
         conversion_factor = SIPrefix.get_factor(pre)
         if conversion_factor and suf in self.symbol_map:
             # get head suffix qu
@@ -73,7 +77,9 @@ class SymbolMap:
         return False
 
     def is_qudt_unit_with_si_prefix(self, qu: QudtUnit):
-        ''' Return True for km, ms, etc, False for mX '''
+        ''' Check if given unit includes an SI prefix in string.
+            returns True for km, ms, etc, False for mX. '''
+
         if not hasattr(qu, INDEX_NAME_CONVERSION_MULTIPLIER) or not hasattr(qu, 'symbol'):
             return False
         prefix, suffix = qu.symbol[0], qu.symbol[1:]
@@ -85,6 +91,8 @@ class SymbolMap:
         return False
 
     def init_list_of_predfined_priorities(self):
+        ''' Initiate the list of pre-defined unit priorities. '''
+
         # pre-defined priorities
         with open(f'{Config.DATA_DIR}/{Config.DATA_PRE_DEFINED_PRIO_FILE}', 'r') as read_file:
             glob_dict = load(read_file)
@@ -96,6 +104,8 @@ class SymbolMap:
                 self.udp[symb_key][inst_long_uri] = inst_prio
 
     def init_list_of_predefined_units(self):
+        ''' Initiate the list of pre-defined units. '''
+
         # pre-defined units
         with open(f'{Config.DATA_DIR}/{Config.DATA_USER_DEFINED_UNITS_FILE}', 'r') as read_file:
             glob_dict = load(read_file)
@@ -105,6 +115,8 @@ class SymbolMap:
             self.udu[inst_full_key] = inst_values
 
     def get_uri_prio(self, symbol, uri):
+        ''' Get prio of URI in its list of instances that share the same symbol. '''
+
         if symbol in self.udp:
             if uri in self.udp[symbol]:
                 return self.udp[symbol][uri]
@@ -115,6 +127,8 @@ class SymbolMap:
         return 1
 
     def print_duplications_on_symbols(self):
+        ''' (Debug) print instances with same symbol (different URIs). '''
+
         for symb_key, symb_list_of_prio_inst_tup in self.symbol_map.items():
             num_of_instances_in_symbol = len(symb_list_of_prio_inst_tup)
             if num_of_instances_in_symbol > 1:
@@ -123,12 +137,14 @@ class SymbolMap:
                     print(f'   [{prio}] {inst.uri}')
 
     def update_symbol_and_labels_maps(self, qu):
+        ''' Update symbol and label map with given unit instance. '''
+
         # label map
         if hasattr(qu, 'label'):
             llabel = qu.label.lower()
             if llabel not in self.label_map:
                 self.label_map[llabel] = qu
-        # check if user supplied additional labels
+        # check if user provided additional labels
         if qu.uri in self.lbl_ex:
             for ex_label in self.lbl_ex[qu.uri]:
                 if ex_label not in self.label_map:
@@ -159,6 +175,8 @@ class SymbolMap:
         self.symbol_map[symb].insert(insrt_qidx, (prio, qu))
 
     def add_user_defined_instances(self):
+        ''' Add instances of units which were defined by user. '''
+
         # check if user provided additional instances (non QUDT)
         for uri, unit_attrs in self.udu.items():
             if 'symbol' in unit_attrs and \
@@ -174,10 +192,11 @@ class SymbolMap:
                 self.update_symbol_and_labels_maps(n_qu)
 
     def construct_map(self):
-        ''' Special classes to handle
-                qudt:DerivedUnit
-                qudt:DecimalPrefixUnit '''
+        ''' Construct sybmol map from parsed instances (RDFParser). '''
 
+        # TODO: Special classes to handle: qudt:DerivedUnit, qudt:DecimalPrefixUnit
+
+        # iterate over all parsed units from the (RDF) triples
         for qu in self.rp.get_details():
             # check if user has provided additional attributes for this qu
             if qu.uri in self.udu:
