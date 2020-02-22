@@ -9,35 +9,57 @@ from .dimension import DimensionVector
 from .symbol_map import SymbolMap
 from .unit import Unit
 from .unit_match import UnitMatch
+from copy import deepcopy
 from typing import *
 
 class CanonicalCompoundUnit:
     def __init__(self, compoundUnit: CompoundUnit):
-        self.unit_obj = dict()
+
         self.symbol_map_instance = SymbolMap.get_instance()
 
-        dimensionVector = DimensionVector()
-
-        # Rearrange numerator and denominator
-        # compoundUnit = self.rearrange_numerator_denominator(compoundUnit)
         compoundUnit = self.merge_same_units(compoundUnit)
-        self.unit_obj[f'{QUDT_PROPERTIES_NAMESPACE}:abbreviation'] = self.get_abbreviation(compoundUnit)
+
+        Abbr = self.get_abbreviation(compoundUnit)
+        qudtAbbr = self.get_abbreviation(compoundUnit, qudtStyle=True)
+
+        self.unit_obj_opts = list()
 
         # Map compound unit to any known quantities
-        qudtAbbr = self.get_abbreviation(compoundUnit, qudtStyle=True)
         compoundUnitQuantity = UnitMatch.find_best_unit_match(qudtAbbr, self.symbol_map_instance)
         if compoundUnitQuantity is not None:
             pass
 
-        self.unit_obj[f'{CCUT_NAMESPACE}:hasPart'] = []
-
         if compoundUnit.numerator:
             for n in compoundUnit.numerator:
-                csu = CanonicalSimpleUnit(n).get_unit_object_list()[0] # TODO: this should be list of options
-                self.unit_obj[f'{CCUT_NAMESPACE}:hasPart'].append(csu)
-                dimensionVector += DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(
-                    n.exponent or 1)
+                csu_list = CanonicalSimpleUnit(n).get_unit_object_list()
+                dummyCount = 0
+                if 0 == len(self.unit_obj_opts):
+                    for csu in csu_list:
+                        tmp_dct = dict()
+                        tmp_dct[f'{CCUT_NAMESPACE}:hasPart'] = []
+                        tmp_dct[f'{CCUT_NAMESPACE}:hasPart'].append(csu)
+                        #tmp_dct['dimensionVector'] = DimensionVector()
+                        tmp_dct['dimensionVector'] = DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(n.exponent or 1)
+                        self.unit_obj_opts.append(tmp_dct)
+                else:
+                    for csu in csu_list:
+                        for obj in unit_objs_copy:
+                            new_obj = deepcopy(obj)
+                            new_obj[f'{CCUT_NAMESPACE}:hasPart'].append(csu)
+                            new_obj['dimensionVector'] += DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(n.exponent or 1)
+                            self.unit_obj_opts.append(new_obj)
+                            dummyCount += 1
+                if dummyCount != 0:
+                    self.unit_obj_opts = self.unit_obj_opts[-dummyCount:]
+                unit_objs_copy = deepcopy(self.unit_obj_opts)
+                #print(f'[****] dummyCount={dummyCount} | self.unit_obj_opts={self.unit_obj_opts}')
+                #for i in self.unit_obj_opts:
+                #    print(f'****** {len(i["ccut:hasPart"])}')
+                #if dummyBool:
+                #    self.unit_obj_opts = self.unit_obj_opts[dummyCount:]
 
+        # TODO: support denominator
+        '''
         if compoundUnit.denominator:
             for d in compoundUnit.denominator:
                 csu = CanonicalSimpleUnit(Unit.negate_exponent(d)).get_unit_object_list()[0] # TODO: this should be list of options
@@ -48,6 +70,12 @@ class CanonicalCompoundUnit:
 
                 # Calculate dimension of unit
         self.unit_obj[f'{CCUT_NAMESPACE}:hasDimension'] = dimensionVector.get_abbr()
+        '''
+        
+        for obj in self.unit_obj_opts:
+            obj[f'{QUDT_PROPERTIES_NAMESPACE}:abbreviation'] = Abbr
+            obj[f'{CCUT_NAMESPACE}:hasDimension'] = obj['dimensionVector'].get_abbr()
+            del obj['dimensionVector']
 
     def merge_same_units(self, compoundUnit: CompoundUnit):
         cu = CompoundUnit([], [])
@@ -101,8 +129,8 @@ class CanonicalCompoundUnit:
         new_unit = Unit(l_unit.symbol, None, new_e, l_unit.comment or r_unit.comment)
         return new_unit
 
-    def get_unit_object(self):
-        return self.unit_obj
+    def get_unit_object_list(self):
+        return self.unit_obj_opts
 
     def get_abbreviation(self, compoundUnit, qudtStyle=False):
         abbr = []

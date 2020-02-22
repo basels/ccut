@@ -57,8 +57,9 @@ class CanonicalCompoundUnitTransformation:
     def get_canonical_compound_unit_dict_from_string(self, unit_string):
         # parse input and output units
         parsed_unit = visit_parse_tree(self.parser.parse(unit_string), UnitVisitor(debug=False))
-        canonical_compound_unit_dict = CanonicalCompoundUnit(parsed_unit).get_unit_object()
-        return canonical_compound_unit_dict
+        canonical_compound_unit_dict = CanonicalCompoundUnit(parsed_unit).get_unit_object_list()
+        #import IPython; IPython.embed();
+        return canonical_compound_unit_dict[0] # TODO: return list, align calls
 
     def get_atomic_unit_exponent(self, atomic_unit_part_dict):
         exponent = 1.0
