@@ -1,2 +1,2 @@
 include ccut/data/*
-exclude ccut/tests
+recursive-exclude ccut/tests/ *

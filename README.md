@@ -123,7 +123,7 @@ For example, running:
 ```
 src_ccu = cc.get_top_ccu("m/s")
 dst_ccu = cc.get_top_ccu("mi/hr")
-cc.convert_str2str(src_ccu, dst_ccu, 2.7)
+cc.convert_ccu2ccu(src_ccu, dst_ccu, 2.7)
 ```
 Will return:
 ```
