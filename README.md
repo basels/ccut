@@ -156,8 +156,7 @@ Will return:
        'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Meter',
        'ccut:hasDimension': 'L',
        'qudtp:conversionMultiplier': 1.0,
-       'qudtp:conversionOffset': 0.0,
-       '_metadata:total_dimension': 1.0
+       'qudtp:conversionOffset': 0.0
      },
      {
        'qudtp:symbol': 's',
@@ -165,8 +164,7 @@ Will return:
        'ccut:hasDimension': 'T',
        'qudtp:conversionMultiplier': 1.0,
        'qudtp:conversionOffset': 0.0,
-       'ccut:exponent': '-1',
-       '_metadata:total_dimension': -1.0
+       'ccut:exponent': '-1'
      }
    ],
    'ccut:hasDimension': 'L T-1'
