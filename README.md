@@ -26,27 +26,28 @@ cc.get_top_ccu("kg/s^2")
 Will return:
 ```
 {
-    'qudtp:abbreviation': 'kg s-2',
-    'ccut:hasPart': [
-        {
-            'qudtp:symbol': 'kg',
-            'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Gram',
-            'ccut:prefix': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Kilo', 'ccut:prefixConversionMultiplier': 1000.0,
-            'ccut:prefixConversionOffset': 0.0,
-            'ccut:hasDimension': 'M',
-            'qudtp:conversionMultiplier': 0.001,
-            'qudtp:conversionOffset': 0.0
-        },
-        {
-            'qudtp:symbol': 's',
-            'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#SecondTime',
-            'ccut:hasDimension': 'T',
-            'qudtp:conversionMultiplier': 1.0,
-            'qudtp:conversionOffset': 0.0,
-            'ccut:exponent': '-2'
-        }
-    ],
-    'ccut:hasDimension': 'M T-2'
+  'qudtp:abbreviation': 'kg s-2',
+  'ccut:hasPart': [
+    {
+      'qudtp:symbol': 'kg',
+      'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Gram',
+      'ccut:prefix': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Kilo',
+      'ccut:prefixConversionMultiplier': 1000.0,
+      'ccut:prefixConversionOffset': 0.0,
+      'ccut:hasDimension': 'M',
+      'qudtp:conversionMultiplier': 0.001,
+      'qudtp:conversionOffset': 0.0
+    },
+    {
+      'qudtp:symbol': 's',
+      'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#SecondTime',
+      'ccut:hasDimension': 'T',
+      'qudtp:conversionMultiplier': 1.0,
+      'qudtp:conversionOffset': 0.0,
+      'ccut:exponent': '-2'
+    }
+  ],
+  'ccut:hasDimension': 'M T-2'
 }
 ```
 
@@ -59,7 +60,47 @@ cc.get_all_ccu("oz")
 ```
 Will return:
 ```
-TBD
+[
+  {
+    'ccut:hasPart': [
+      {
+        'qudtp:symbol': 'oz',
+        'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#LiquidOunceUS',
+        'ccut:hasDimension': 'L3',
+        'qudtp:conversionMultiplier': 2.95735296e-05,
+        'qudtp:conversionOffset': 0.0
+      }
+    ],
+    'qudtp:abbreviation': 'oz',
+    'ccut:hasDimension': 'L3'
+  },
+  {
+    'ccut:hasPart': [
+      {
+        'qudtp:symbol': 'oz',
+        'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#OunceImperial',
+        'ccut:hasDimension': 'L3',
+        'qudtp:conversionMultiplier': 2.84130625e-05,
+        'qudtp:conversionOffset': 0.0
+      }
+    ],
+    'qudtp:abbreviation': 'oz',
+    'ccut:hasDimension': 'L3'
+  },
+  {
+    'ccut:hasPart': [
+      {
+        'qudtp:symbol': 'oz',
+        'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#OunceTroy',
+        'ccut:hasDimension': 'M',
+        'qudtp:conversionMultiplier': 0.0311034768,
+        'qudtp:conversionOffset': 0.0
+      }
+    ],
+    'qudtp:abbreviation': 'oz',
+    'ccut:hasDimension': 'M'
+  }
+]
 ```
 
 #### CCU Transformation (Conversion):
@@ -104,54 +145,53 @@ cc.convert_str2str("m/s", "mi/hr", 2.7)
 ```
 Will return:
 ```
-(
-    6.039727988546887,
-    0,
-    'OK',
-    {
-        'qudtp:abbreviation': 'm s-1',
-        'ccut:hasPart': [
-            {
-                'qudtp:symbol': 'm',
-                'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Meter',
-                'ccut:hasDimension': 'L',
-                'qudtp:conversionMultiplier': 1.0,
-                'qudtp:conversionOffset': 0.0,
-                '_metadata:total_dimension': 1.0
-            },
-            {
-                'qudtp:symbol': 's',
-                'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#SecondTime',
-                'ccut:hasDimension': 'T',
-                'qudtp:conversionMultiplier': 1.0,
-                'qudtp:conversionOffset': 0.0,
-                'ccut:exponent': '-1',
-                '_metadata:total_dimension': -1.0
-            }
-        ],
-        'ccut:hasDimension': 'L T-1'
-    },
-    {
-        'qudtp:abbreviation': 'mi hr-1',
-        'ccut:hasPart': [
-            {
-                'qudtp:symbol': 'mi',
-                'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#MileInternational',
-                'ccut:hasDimension': 'L',
-                'qudtp:conversionMultiplier': 1609.344,
-                'qudtp:conversionOffset': 0.0
-            },
-            {
-                'qudtp:symbol': 'hr',
-                'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Hour',
-                'ccut:hasDimension': 'T',
-                'qudtp:conversionMultiplier': 3600.0,
-                'qudtp:conversionOffset': 0.0,
-                'ccut:exponent': '-1'
-            }
-        ],
-        'ccut:hasDimension': 'L T-1'
-    }
+(6.039727988546887,
+ 0,
+ 'OK',
+ {
+   'qudtp:abbreviation': 'm s-1',
+   'ccut:hasPart': [
+     {
+       'qudtp:symbol': 'm',
+       'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Meter',
+       'ccut:hasDimension': 'L',
+       'qudtp:conversionMultiplier': 1.0,
+       'qudtp:conversionOffset': 0.0,
+       '_metadata:total_dimension': 1.0
+     },
+     {
+       'qudtp:symbol': 's',
+       'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#SecondTime',
+       'ccut:hasDimension': 'T',
+       'qudtp:conversionMultiplier': 1.0,
+       'qudtp:conversionOffset': 0.0,
+       'ccut:exponent': '-1',
+       '_metadata:total_dimension': -1.0
+     }
+   ],
+   'ccut:hasDimension': 'L T-1'
+ },
+ {
+   'qudtp:abbreviation': 'mi hr-1',
+   'ccut:hasPart': [
+     {
+       'qudtp:symbol': 'mi',
+       'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#MileInternational',
+       'ccut:hasDimension': 'L',
+       'qudtp:conversionMultiplier': 1609.344,
+       'qudtp:conversionOffset': 0.0
+     },
+     {
+       'qudtp:symbol': 'hr',
+       'qudtp:quantityKind': 'http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#Hour',
+       'ccut:hasDimension': 'T',
+       'qudtp:conversionMultiplier': 3600.0,
+       'qudtp:conversionOffset': 0.0,
+       'ccut:exponent': '-1'
+     }
+   ],
+   'ccut:hasDimension': 'L T-1'
+ }
 )
 ```
 

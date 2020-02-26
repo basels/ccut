@@ -77,16 +77,17 @@ class DimensionVector:
         dimensionVector = []
 
         # TODO: add URIs and use a better representation
-        dimensionVector.append(Dimension('M', None, 0))
-        dimensionVector.append(Dimension('L', None, 0))
-        dimensionVector.append(Dimension('T', None, 0))
-        dimensionVector.append(Dimension('I', None, 0))
+        dimensionVector.append(Dimension('M',  None, 0))
+        dimensionVector.append(Dimension('L',  None, 0))
+        dimensionVector.append(Dimension('T',  None, 0))
+        dimensionVector.append(Dimension('I',  None, 0))
         dimensionVector.append(Dimension('Te', None, 0))
-        dimensionVector.append(Dimension('N', None, 0))
-        dimensionVector.append(Dimension('J', None, 0))
-        dimensionVector.append(Dimension('D', None, 0))
-        dimensionVector.append(Dimension('C', None, 0))
-        dimensionVector.append(Dimension('B', None, 0))
+        dimensionVector.append(Dimension('N',  None, 0))
+        dimensionVector.append(Dimension('J',  None, 0))
+        dimensionVector.append(Dimension('D',  None, 0))
+        dimensionVector.append(Dimension('C',  None, 0))
+        dimensionVector.append(Dimension('B',  None, 0))
+        dimensionVector.append(Dimension('U',  None, 0))
 
         return dimensionVector
 

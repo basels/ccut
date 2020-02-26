@@ -29,53 +29,49 @@ class CanonicalCompoundUnit:
         if compoundUnitQuantity is not None:
             pass
 
-        if compoundUnit.numerator:
-            for n in compoundUnit.numerator:
-                csu_list = CanonicalSimpleUnit(n).get_unit_object_list()
+        self.construct_list_of_unit_object_options(compoundUnit, True) # numerator
+        self.construct_list_of_unit_object_options(compoundUnit, False) # denominator
+        
+        for obj in self.unit_obj_opts:
+            obj[f'{QUDT_PROPERTIES_NAMESPACE}:abbreviation'] = Abbr
+            obj[f'{CCUT_NAMESPACE}:hasDimension'] = obj['dimensionVector'].get_abbr()
+            del obj['dimensionVector']
+
+    def construct_list_of_unit_object_options(self, compoundUnit: CompoundUnit, numerator_n_denominator: bool):
+        negate_exp = False
+        if numerator_n_denominator: # numerator
+            unit_elements = compoundUnit.numerator
+        else:
+            negate_exp = True
+            unit_elements = compoundUnit.denominator
+
+        unit_objs_copy = deepcopy(self.unit_obj_opts)
+
+        if unit_elements:
+            for e in unit_elements:
+                if negate_exp:
+                    e = Unit.negate_exponent(e)
+                csu_list = CanonicalSimpleUnit(e).get_unit_object_list()
                 dummyCount = 0
                 if 0 == len(self.unit_obj_opts):
                     for csu in csu_list:
                         tmp_dct = dict()
                         tmp_dct[f'{CCUT_NAMESPACE}:hasPart'] = []
                         tmp_dct[f'{CCUT_NAMESPACE}:hasPart'].append(csu)
-                        #tmp_dct['dimensionVector'] = DimensionVector()
-                        tmp_dct['dimensionVector'] = DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(n.exponent or 1)
+                        tmp_dct['dimensionVector'] = DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(e.exponent or 1)
                         self.unit_obj_opts.append(tmp_dct)
                 else:
                     for csu in csu_list:
                         for obj in unit_objs_copy:
                             new_obj = deepcopy(obj)
                             new_obj[f'{CCUT_NAMESPACE}:hasPart'].append(csu)
-                            new_obj['dimensionVector'] += DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(n.exponent or 1)
+                            new_obj['dimensionVector'] += DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(e.exponent or 1)
                             self.unit_obj_opts.append(new_obj)
                             dummyCount += 1
                 if dummyCount != 0:
                     self.unit_obj_opts = self.unit_obj_opts[-dummyCount:]
                 unit_objs_copy = deepcopy(self.unit_obj_opts)
-                #print(f'[****] dummyCount={dummyCount} | self.unit_obj_opts={self.unit_obj_opts}')
-                #for i in self.unit_obj_opts:
-                #    print(f'****** {len(i["ccut:hasPart"])}')
-                #if dummyBool:
-                #    self.unit_obj_opts = self.unit_obj_opts[dummyCount:]
 
-        # TODO: support denominator
-        '''
-        if compoundUnit.denominator:
-            for d in compoundUnit.denominator:
-                csu = CanonicalSimpleUnit(Unit.negate_exponent(d)).get_unit_object_list()[0] # TODO: this should be list of options
-                self.unit_obj[f'{CCUT_NAMESPACE}:hasPart'].append(csu)
-                # This is line is too complicated. Must be simplified
-                dimensionVector += DimensionVector().set_dimensions(csu[f'{CCUT_NAMESPACE}:hasDimension']).raise_to_power(
-                    Unit.negate_exponent(d).exponent or 1)
-
-                # Calculate dimension of unit
-        self.unit_obj[f'{CCUT_NAMESPACE}:hasDimension'] = dimensionVector.get_abbr()
-        '''
-        
-        for obj in self.unit_obj_opts:
-            obj[f'{QUDT_PROPERTIES_NAMESPACE}:abbreviation'] = Abbr
-            obj[f'{CCUT_NAMESPACE}:hasDimension'] = obj['dimensionVector'].get_abbr()
-            del obj['dimensionVector']
 
     def merge_same_units(self, compoundUnit: CompoundUnit):
         cu = CompoundUnit([], [])

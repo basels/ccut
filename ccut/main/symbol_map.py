@@ -32,7 +32,6 @@ class SymbolMap:
 
     def __init__(self):
 
-        print('\033[35m' + '-'*20 + ' Initializing CCUT SymbolMap instance ' + '-'*20 + '\033[0m')
         self.symbol_map = dict()
         self.label_map = dict()
         self.si_prefix_map = dict()
@@ -48,13 +47,12 @@ class SymbolMap:
         self.init_list_of_predfined_priorities()
         self.construct_map()
         self.add_user_defined_instances()
-        self.print_duplications_on_symbols()
+        # self.print_duplications_on_symbols()
 
         del self.rp
         del self.udu
         del self.lbl_ex
         del self.udp
-        print('\033[35m' + '-'*15 + ' Finished initializing CCUT SymbolMap instance ' + '-'*16 + '\033[0m')
 
     @staticmethod
     def get_instance() -> 'SymbolMap':
