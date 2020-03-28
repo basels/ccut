@@ -199,7 +199,7 @@ If you would like to cite the this tool in a paper or presentation, the followin
 ```
 @article{shbita2019parsing,
   title={Parsing, Representing and Transforming Units of Measure},
-  author={Shbita, Basel and Rajendran, Arunkumar and Pujara, Jay and Knoblock, Craig A}
+  author={Shbita, Basel and Rajendran, Arunkumar and Pujara, Jay and Knoblock, Craig A},
   journal={Modeling the World’s Systems},
   year={2019},
 }
